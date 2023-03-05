@@ -1,0 +1,226 @@
+package com.example.coroutinescomposeapp.screen
+
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.outlined.CreditCard
+import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.coroutinescomposeapp.R
+import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
+import com.example.coroutinescomposeapp.ui.theme.DarkGray
+import kotlinx.coroutines.launch
+
+@Composable
+fun ProfileAvatar(@DrawableRes avatarRes: Int, modifier: Modifier, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.clickable(onClick = onClick)
+    ) {
+        Spacer(modifier = Modifier.height(18.dp))
+        Image(
+            painter = painterResource(id = avatarRes),
+            contentDescription = "Profile avatar",
+            modifier = Modifier
+                .size(60.dp)
+                .clip(MaterialTheme.shapes.large),
+            contentScale = ContentScale.Crop
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Change photo", style = MaterialTheme.typography.h6, color = DarkGray)
+    }
+}
+
+@Preview
+@Composable
+fun ProfileScaffold() {
+    val scaffoldState =
+        rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
+    val coroutineScope = rememberCoroutineScope()
+    CoroutinesComposeAppTheme {
+        Scaffold(scaffoldState = scaffoldState,
+            modifier = Modifier.fillMaxHeight(),
+            topBar = {
+                ProfileTopAppBar(onClick = {
+                    coroutineScope.launch {
+                        scaffoldState.snackbarHostState.showSnackbar("TEST")
+                    }
+                })
+            }) {
+            it
+            ProfilePreview()
+        }
+    }
+}
+
+@Composable
+fun ProfilePreview() {
+    CoroutinesComposeAppTheme {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            ProfileAvatar(
+                avatarRes = R.drawable.ic_launcher_background,
+                modifier = Modifier.weight(0.2f)
+            ) {}
+            Text(
+                text = "SetJy",
+                style = MaterialTheme.typography.h2,
+                modifier = Modifier.weight(0.1f)
+            )
+            UploadItemButton(modifier = Modifier.weight(0.1f)) {}
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.weight(0.6f)
+            ) {
+                ProfileTextButton("Trade store") {}
+                ProfileTextButton("Payment Method") {}
+                ProfileTextButton("Balance", cashCount = 1538) {}
+                ProfileTextButton(
+                    "Restore Purchase",
+                    imageVector = Icons.Rounded.Cached,
+                    isArrowVisible = false
+                ) {}
+                ProfileTextButton(
+                    "Help",
+                    imageVector = Icons.Rounded.HelpOutline,
+                    isArrowVisible = false
+                ) {}
+                ProfileTextButton(
+                    "Log out",
+                    imageVector = Icons.Outlined.Logout,
+                    isArrowVisible = false
+                ) {}
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileTopAppBar(onClick: () -> Unit) {
+    TopAppBar(
+        elevation = 0.dp,
+        title = {
+            Text(
+                text = "Profile",
+                style = MaterialTheme.typography.h2,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        backgroundColor = Color.White,
+        navigationIcon = {
+            IconButton(onClick = onClick) {
+                Icon(
+                    imageVector = Icons.Rounded.ArrowBackIos,
+                    contentDescription = "Back",
+                )
+            }
+        })
+}
+
+@Composable
+private fun UploadItemButton(modifier: Modifier, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier.padding(bottom = 10.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(0.8f),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Image(
+                imageVector = Icons.Rounded.Upload,
+                contentDescription = "Upload item",
+                colorFilter = ColorFilter.tint(Color.White),
+                modifier = Modifier.fillMaxWidth(0.2f),
+                alignment = Alignment.CenterStart
+            )
+            Text(
+                text = "Upload item",
+                modifier = Modifier.fillMaxWidth(0.6f),
+                style = MaterialTheme.typography.button
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileTextButton(
+    text: String,
+    imageVector: ImageVector = Icons.Outlined.CreditCard,
+    isArrowVisible: Boolean = true,
+    cashCount: Int? = null,
+    onClick: () -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .fillMaxWidth()
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Image(
+                imageVector = Icons.Filled.Circle,
+                contentDescription = null,
+                alpha = 0.2f,
+                modifier = Modifier.size(40.dp)
+            )
+            Image(
+                imageVector = imageVector,
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth(0.2f)
+            )
+        }
+        Text(
+            text = text,
+            modifier = Modifier.fillMaxWidth(0.5f),
+            style = MaterialTheme.typography.body1,
+            textAlign = TextAlign.Start
+        )
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth(0.8f)
+        ) {
+            when {
+                cashCount != null -> {
+                    Text(
+                        text = "$$cashCount",
+                        modifier = Modifier.fillMaxWidth(0.7f),
+                        textAlign = TextAlign.End,
+                        style = MaterialTheme.typography.body1
+                    )
+                }
+                isArrowVisible -> {
+                    Image(
+                        imageVector = Icons.Rounded.ArrowForwardIos,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth(0.2f),
+                        alignment = Alignment.CenterEnd
+                    )
+                }
+            }
+        }
+    }
+}

@@ -39,13 +39,13 @@ private fun SignUpScreen() {
             .fillMaxWidth()
             .fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Bottom
     ) {
-        Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxHeight(0.25f)) {
+        Column(modifier = Modifier.weight(0.2f), verticalArrangement = Arrangement.Center) {
             HeaderText("Sign Up")
         }
         Column(
-            modifier = Modifier.fillMaxHeight(0.6f), verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.weight(0.5f), verticalArrangement = Arrangement.SpaceBetween
         ) {
             SignUpEditText(
                 placeholder = "First name",
@@ -61,16 +61,11 @@ private fun SignUpScreen() {
                 onValueChange = { valueEmail = it })
             ButtonWithText(text = "Sign up") {}
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .fillMaxHeight(0.3f)
-                .padding(top = 10.dp)
-        ) {
-            SignInText {}
-        }
+
+        SignInText(modifier = Modifier.weight(0.05f)) {}
+
         Column(
-            modifier = Modifier.fillMaxHeight(0.5f), verticalArrangement = Arrangement.Center
+            modifier = Modifier.weight(0.25f), verticalArrangement = Arrangement.Top
         ) {
             SignUpWithAnotherResource(
                 imageRes = R.drawable.ic_google, resource = "Google"
@@ -115,17 +110,23 @@ fun ButtonWithText(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SignInText(onClick: () -> Unit) {
-    Text(
-        text = "Already have an account? ",
-        style = MaterialTheme.typography.h6
-    )
-    Text(
-        text = "Sign in",
-        style = MaterialTheme.typography.h6,
-        modifier = Modifier.clickable(onClick = onClick),
-        color = MaterialTheme.colors.primary
-    )
+private fun SignInText(modifier: Modifier, onClick: () -> Unit) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth(0.8f)
+            .padding(top = 10.dp)
+    ) {
+        Text(
+            text = "Already have an account? ",
+            style = MaterialTheme.typography.h6
+        )
+        Text(
+            text = "Sign in",
+            style = MaterialTheme.typography.h6,
+            modifier = Modifier.clickable(onClick = onClick),
+            color = MaterialTheme.colors.primary
+        )
+    }
 }
 
 @Composable
