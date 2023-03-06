@@ -69,6 +69,11 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp
     ),
+    body2 = TextStyle(
+        fontFamily = MontserratFontFamily,
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 13.sp
+    ),
     button = TextStyle(
         fontFamily = MontserratFontFamily,
         fontWeight = FontWeight.Bold,

@@ -1,21 +1,23 @@
 package com.example.coroutinescomposeapp.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
+import com.example.coroutinescomposeapp.ui.theme.VeryLightGray
 
 @Preview(showBackground = true)
 @Composable
@@ -33,6 +35,9 @@ private fun LoginScreen() {
     var valuePassword by remember {
         mutableStateOf("")
     }
+    var passwordVisibility by remember {
+        mutableStateOf(false)
+    }
 
     Column(
         modifier = Modifier
@@ -48,8 +53,43 @@ private fun LoginScreen() {
         Column(
             modifier = Modifier.fillMaxHeight(0.45f), verticalArrangement = Arrangement.SpaceBetween
         ) {
-            SignUpEditText("E-mail", value = valueEmail, onValueChange = { valueEmail = it })
-            PasswordEditText(value = valuePassword, onValueChange = { valuePassword = it })
+            CustomTextField(
+                placeholder = "E-mail",
+                value = valueEmail,
+                onValueChange = { valueEmail = it },
+                modifier = Modifier
+                    .fillMaxWidth(fraction = 0.8f)
+                    .height(29.dp)
+                    .background(color = VeryLightGray, shape = MaterialTheme.shapes.large)
+            )
+            CustomTextField(
+                placeholder = "Password",
+                value = valuePassword,
+                onValueChange = { valuePassword = it },
+                modifier = Modifier
+                    .fillMaxWidth(fraction = 0.8f)
+                    .height(29.dp)
+                    .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
+                trailingIcon = {
+                    val image = if (passwordVisibility) {
+                        Icons.Outlined.Visibility
+                    } else {
+                        Icons.Outlined.VisibilityOff
+                    }
+                    val description = when {
+                        passwordVisibility -> "Hide password"
+                        else -> "Show password"
+                    }
+                    IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                        Icon(imageVector = image, contentDescription = description)
+                    }
+                },
+                visualTransformation = if (passwordVisibility) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                }
+            )
             ButtonWithText(text = "Login") {}
         }
     }
@@ -61,45 +101,4 @@ fun HeaderText(text: String) {
         text = text,
         style = MaterialTheme.typography.h1
     )
-}
-
-@Composable
-fun PasswordEditText(value: String, onValueChange: (String) -> Unit) {
-    val passwordVisibility = remember { mutableStateOf(false) }
-
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth(fraction = 0.8f)
-            .clip(RoundedCornerShape(16.dp)),
-        visualTransformation = if (passwordVisibility.value) {
-            VisualTransformation.None
-        } else {
-            PasswordVisualTransformation()
-        },
-        trailingIcon = {
-            val image = if (passwordVisibility.value) {
-                Icons.Outlined.Visibility
-            } else {
-                Icons.Outlined.VisibilityOff
-            }
-            val description = when {
-                passwordVisibility.value -> "Hide password"
-                else -> "Show password"
-            }
-            IconButton(onClick = { passwordVisibility.value = !passwordVisibility.value }) {
-                Icon(imageVector = image, contentDescription = description)
-            }
-        },
-        placeholder = {
-            Text(
-                text = "Password",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 40.dp),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.h5
-            )
-        })
 }

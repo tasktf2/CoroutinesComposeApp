@@ -2,22 +2,27 @@ package com.example.coroutinescomposeapp.screen
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.coroutinescomposeapp.R
 import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
+import com.example.coroutinescomposeapp.ui.theme.VeryLightGray
 
 @Preview(showBackground = true)
 @Composable
@@ -45,20 +50,34 @@ private fun SignUpScreen() {
             HeaderText("Sign Up")
         }
         Column(
-            modifier = Modifier.weight(0.5f), verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.weight(0.5f),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SignUpEditText(
+            CustomTextField(
                 placeholder = "First name",
                 value = valueFirstName,
-                onValueChange = { valueFirstName = it })
-            SignUpEditText(
+                onValueChange = { valueFirstName = it },
+                modifier = Modifier
+                    .height(29.dp)
+                    .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
+            )
+            CustomTextField(
                 placeholder = "Second name",
                 value = valueSecondName,
-                onValueChange = { valueSecondName = it })
-            SignUpEditText(
+                onValueChange = { valueSecondName = it },
+                modifier = Modifier
+                    .height(29.dp)
+                    .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
+            )
+            CustomTextField(
                 placeholder = "E-mail",
                 value = valueEmail,
-                onValueChange = { valueEmail = it })
+                onValueChange = { valueEmail = it },
+                modifier = Modifier
+                    .height(29.dp)
+                    .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
+            )
             ButtonWithText(text = "Sign up") {}
         }
 
@@ -78,22 +97,59 @@ private fun SignUpScreen() {
 }
 
 @Composable
-fun SignUpEditText(placeholder: String, value: String, onValueChange: (String) -> Unit) {
-
-    TextField(
+fun CustomTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
+    placeholder: String = "",
+    visualTransformation: VisualTransformation = VisualTransformation.None
+) {
+    BasicTextField(
+        modifier = modifier
+            .defaultMinSize(
+                minWidth = TextFieldDefaults.MinWidth,
+                minHeight = TextFieldDefaults.MinHeight
+            ),
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth(fraction = 0.8f)
-            .clip(MaterialTheme.shapes.medium),
-        placeholder = {
-            Text(
-                text = placeholder,
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.h5,
-                textAlign = TextAlign.Center
-            )
-        })
+        singleLine = true,
+        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+        textStyle = MaterialTheme.typography.h5.copy(
+            color = MaterialTheme.colors.onSurface
+        ),
+        visualTransformation = visualTransformation,
+        decorationBox = { innerTextField ->
+            Box {
+                if (leadingIcon != null) {
+                    Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                        leadingIcon()
+                    }
+                }
+                Box(
+                    modifier = Modifier.align(Alignment.Center),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (value.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            style = MaterialTheme.typography.h5.copy(
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f)
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    innerTextField()
+                }
+                if (trailingIcon != null) {
+                    Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                        trailingIcon()
+                    }
+                }
+            }
+        }
+    )
 }
 
 @Composable
