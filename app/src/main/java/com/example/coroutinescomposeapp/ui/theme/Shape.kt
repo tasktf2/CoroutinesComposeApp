@@ -2,10 +2,9 @@ package com.example.coroutinescomposeapp.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Shapes
-import androidx.compose.ui.unit.dp
 
 val Shapes = Shapes(
-    small = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(percent = 4),
     medium = RoundedCornerShape(percent = 25),
     large = RoundedCornerShape(percent = 50)
 )
