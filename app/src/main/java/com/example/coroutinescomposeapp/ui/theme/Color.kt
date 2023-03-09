@@ -2,7 +2,14 @@ package com.example.coroutinescomposeapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
+val VeryLightGray = Color(0xFFE8E8E8)
+val DarkGray = Color(0xFF808080)
+val VeryDarkGray = Color(0xFF5B5B5B)
+val ModerateBlue = Color(0xFF4E55D7)
+val LightCyan = Color(0xFFF5F6F6)
+val LightGrayishBlue = Color(0xFFEEEFF4)
+val DarkBlue = Color(0xFF545589)
+val SilverSand = Color(0xD9C4C4C4)
+val VeryDarkBlue = Color(0xFF181726)
+val VeryLightBlue = Color(0xFF99A0FF)
+val BrightOrange = Color(0xFFF6C042)
