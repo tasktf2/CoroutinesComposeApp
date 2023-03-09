@@ -6,7 +6,7 @@ data class DescriptionItemUI(
     @DrawableRes val itemImages: List<Int>,
     val itemName: String,
     val itemDescription: String,
-    val itemPrice: Int,
+    val itemPrice: Double,
     val itemRating: Double,
     val itemCountOfReviews: Int,
     val colors: List<String>,

@@ -12,7 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.ArrowBackIos
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,12 +46,19 @@ fun DetailsPreview() {
 fun DetailsScaffold() {
     val scaffoldState = rememberScaffoldState()
     val descriptionItemUI = TempData.descriptionItemUI
+    var quantity by remember { mutableStateOf(1) }
     Scaffold(
         scaffoldState = scaffoldState,
         modifier = Modifier.fillMaxSize(),
         topBar = { DetailsTopAppBar {} }
     ) {
-        DetailsBody(paddingValues = it, descriptionItemUI = descriptionItemUI)
+        DetailsBody(
+            paddingValues = it,
+            descriptionItemUI = descriptionItemUI,
+            quantity = quantity,
+            onMinusClicked = { if (quantity != 1) quantity -= 1 },
+            onPlusClicked = { quantity += 1 },
+            onAddToCartClicked = {})
     }
 }
 
@@ -70,7 +77,14 @@ fun DetailsTopAppBar(onBackClicked: () -> Unit) {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun DetailsBody(paddingValues: PaddingValues, descriptionItemUI: DescriptionItemUI) {
+fun DetailsBody(
+    paddingValues: PaddingValues,
+    descriptionItemUI: DescriptionItemUI,
+    quantity: Int,
+    onMinusClicked: () -> Unit,
+    onPlusClicked: () -> Unit,
+    onAddToCartClicked: () -> Unit
+) {
     val pagerState: PagerState = rememberPagerState()
     val scrollState = rememberScrollState()
     Box(modifier = Modifier.fillMaxSize()) {
@@ -86,7 +100,7 @@ fun DetailsBody(paddingValues: PaddingValues, descriptionItemUI: DescriptionItem
             DetailsPager(
                 state = pagerState,
                 images = descriptionItemUI.itemImages
-            )
+            ) {}
             ItemPreviewRow(
                 descriptionItemUI = descriptionItemUI,
                 state = pagerState
@@ -97,14 +111,25 @@ fun DetailsBody(paddingValues: PaddingValues, descriptionItemUI: DescriptionItem
         AddToCart(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxHeight(0.15f)
+                .fillMaxHeight(0.15f),
+            price = calculateTotalPrice(price = descriptionItemUI.itemPrice, quantity = quantity),
+            onMinusClicked = onMinusClicked,
+            onPlusClicked = onPlusClicked,
+            onAddToCartClicked = onAddToCartClicked
         )
     }
 }
 
+fun calculateTotalPrice(price: Double, quantity: Int): Double = price * quantity
+
 @Composable
 @OptIn(ExperimentalPagerApi::class)
-private fun DetailsPager(state: PagerState, images: List<Int>) {
+private fun DetailsPager(
+    state: PagerState,
+    images: List<Int>,
+    onShareClick: () -> Unit
+) {
+    var valueFavorite by remember { mutableStateOf(false) }
     HorizontalPager(
         count = images.size,
         state = state,
@@ -122,10 +147,7 @@ private fun DetailsPager(state: PagerState, images: List<Int>) {
                 contentDescription = "Product image",
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .size(
-                        width = 328.dp,
-                        height = 279.dp
-                    )
+                    .size(width = 328.dp, height = 279.dp)
                     .clip(MaterialTheme.shapes.small),
                 contentScale = ContentScale.Crop
             )
@@ -141,15 +163,20 @@ private fun DetailsPager(state: PagerState, images: List<Int>) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                IconButton(onClick = { /*TODO*/ }) {
+                val image = if (valueFavorite) {
+                    Icons.Outlined.Favorite
+                } else {
+                    Icons.Outlined.FavoriteBorder
+                }
+                IconButton(onClick = { valueFavorite = !valueFavorite }) { //stub
                     Icon(
-                        imageVector = Icons.Outlined.FavoriteBorder,
+                        imageVector = image,
                         contentDescription = "Favorite",
                         tint = DarkBlue
                     )
                 }
                 Divider(color = DarkBlue, thickness = 2.dp, modifier = Modifier.width(14.dp))
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = onShareClick) {
                     Icon(
                         imageVector = Icons.Outlined.Share,
                         contentDescription = "Share",
@@ -177,6 +204,11 @@ private fun ItemPreviewRow(
         horizontalArrangement = Arrangement.Center
     ) {
         items(items = descriptionItemUI.itemImages) { item ->
+
+            val elevation = when (state.currentPage) {
+                descriptionItemUI.itemImages.indexOf(item) -> 10.dp
+                else -> 0.dp
+            }
             val itemModifier =
                 when (state.currentPage) {
                     descriptionItemUI.itemImages.indexOf(item) -> Modifier
@@ -185,12 +217,14 @@ private fun ItemPreviewRow(
                         .size(width = 66.dp, height = 38.dp)
                         .padding(horizontal = 4.dp)
                 }
-            Image(
-                painter = painterResource(id = item),
-                contentDescription = null,
-                modifier = itemModifier.clip(MaterialTheme.shapes.medium),
-                contentScale = ContentScale.Crop
-            )
+            Card(elevation = elevation) {
+                Image(
+                    painter = painterResource(id = item),
+                    contentDescription = null,
+                    modifier = itemModifier.clip(MaterialTheme.shapes.medium),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
     }
 }
@@ -251,33 +285,50 @@ private fun ItemDescription(descriptionItemUI: DescriptionItemUI) {
 
 @Composable
 private fun RowOfColors(descriptionItemUI: DescriptionItemUI) {
+
+    var colorPick by remember { mutableStateOf(descriptionItemUI.colors[0]) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        descriptionItemUI.colors.forEach {
+        descriptionItemUI.colors.forEach { itemColor ->
+            val borderModifier = when (colorPick) {
+                itemColor -> Modifier.border(
+                    width = 2.dp,
+                    color = MaterialTheme.colors.onSurface,
+                    shape = MaterialTheme.shapes.medium
+                )
+                else -> Modifier.border(
+                    width = 2.dp,
+                    color = MaterialTheme.colors.surface,
+                    shape = MaterialTheme.shapes.medium
+                )
+            }
             Image(
                 painter = painterResource(id = R.drawable.ic_launcher_background),
-                colorFilter = ColorFilter.tint(Color(it.toColorInt())),
+                colorFilter = ColorFilter.tint(Color(itemColor.toColorInt())),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
+                modifier = borderModifier
                     .size(width = 34.dp, height = 26.dp)
+                    .clickable { colorPick = itemColor }
                     .clip(MaterialTheme.shapes.medium)
-                    .border(
-                        width = 2.dp,
-                        color = MaterialTheme.colors.surface,
-                        shape = MaterialTheme.shapes.medium
-                    )
             )
         }
     }
 }
 
 @Composable
-private fun AddToCart(modifier: Modifier) {
+private fun AddToCart(
+    modifier: Modifier,
+    price: Double = 0.0,
+    onMinusClicked: () -> Unit,
+    onPlusClicked: () -> Unit,
+    onAddToCartClicked: () -> Unit,
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -296,7 +347,7 @@ private fun AddToCart(modifier: Modifier) {
             Spacer(modifier = Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = onMinusClicked,
                     modifier = Modifier
                         .size(width = 38.dp, height = 22.dp),
                     shape = MaterialTheme.shapes.medium
@@ -304,7 +355,7 @@ private fun AddToCart(modifier: Modifier) {
                     Divider(color = Color.White, thickness = 2.dp, modifier = Modifier.width(10.dp))
                 }
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = onPlusClicked,
                     modifier = Modifier
                         .size(width = 38.dp, height = 22.dp),
                     shape = MaterialTheme.shapes.medium
@@ -327,7 +378,7 @@ private fun AddToCart(modifier: Modifier) {
             }
         }
         Button(
-            onClick = { /*TODO*/ },
+            onClick = onAddToCartClicked,
             modifier = Modifier
                 .size(width = 170.dp, height = 44.dp)
                 .fillMaxWidth(0.5f),
@@ -340,7 +391,7 @@ private fun AddToCart(modifier: Modifier) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "#2500",
+                    text = "#$price",
                     style = MaterialTheme.typography.h6,
                     color = VeryLightBlue,
                     fontSize = 8.sp

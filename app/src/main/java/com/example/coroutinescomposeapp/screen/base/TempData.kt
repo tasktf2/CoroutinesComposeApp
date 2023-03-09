@@ -28,7 +28,7 @@ object TempData {
             itemDescription = "Features waterproof, fire, air resistant shoes. all changed when the country of fire attacked",
             itemRating = 3.9,
             itemCountOfReviews = 4000,
-            itemPrice = 0,
+            itemPrice = 20.0,
             colors = listOf(
                 "#ffffff",
                 "#b5b5b5",
