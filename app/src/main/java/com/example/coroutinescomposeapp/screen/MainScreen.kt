@@ -9,12 +9,14 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,6 +46,9 @@ fun MainScaffold() {
     val scaffoldState =
         rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
     val coroutineScope = rememberCoroutineScope()
+
+    var valueSearch by remember { mutableStateOf("") }
+
     Scaffold(
         scaffoldState = scaffoldState,
         modifier = Modifier
@@ -62,7 +67,10 @@ fun MainScaffold() {
                 avatarRes = R.drawable.ic_launcher_background,
                 onAvatarClicked = {})
         }) { paddingValues ->
-        Body(paddingValues)
+        MainBody(
+            paddingValues = paddingValues,
+            valueSearch = valueSearch,
+            onValueChanged = { valueSearch = it })
     }
 }
 
@@ -152,11 +160,11 @@ fun MainDrawer() {
 }
 
 @Composable
-fun Body(paddingValues: PaddingValues) {
-    var valueSearch by remember { mutableStateOf("") }
+fun MainBody(paddingValues: PaddingValues, valueSearch: String, onValueChanged: (String) -> Unit) {
     val scrollState = rememberScrollState()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
@@ -164,7 +172,7 @@ fun Body(paddingValues: PaddingValues) {
     ) {
         CustomTextField(
             value = valueSearch,
-            onValueChange = { valueSearch = it },
+            onValueChange = onValueChanged,
             modifier = Modifier
                 .height(24.dp)
                 .background(
@@ -174,9 +182,9 @@ fun Body(paddingValues: PaddingValues) {
             placeholder = "What are you looking for?",
         )
         RoundCategories(TempData.listOfIcons)
-        CardGroup(cardType = CardType.LATEST)
-        CardGroup(cardType = CardType.FLASH_SALE)
-        CardGroup(cardType = CardType.BRANDS)
+        CardGroup(cardType = CardType.LATEST) {}
+        CardGroup(cardType = CardType.FLASH_SALE) {}
+        CardGroup(cardType = CardType.BRANDS) {}
     }
 }
 
@@ -215,7 +223,7 @@ fun Category(imageVector: ImageVector, description: String) {
 }
 
 @Composable
-fun CardGroup(cardType: CardType) {
+fun CardGroup(cardType: CardType, onViewAllClick: () -> Unit) {
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -225,7 +233,11 @@ fun CardGroup(cardType: CardType) {
                 .padding(horizontal = 12.dp)
         ) {
             Text(text = cardType.groupName, style = MaterialTheme.typography.h2)
-            Text(text = "View all", style = MaterialTheme.typography.h6.copy(color = DarkGray))
+            Text(
+                text = "View all",
+                style = MaterialTheme.typography.h6.copy(color = DarkGray),
+                modifier = Modifier.clickable(onClick = onViewAllClick)
+            )
         }
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(
@@ -249,7 +261,19 @@ fun CardItem(cardType: CardType) {
             contentScale = ContentScale.Crop
         )
         CardText(cardType, Modifier.align(Alignment.BottomStart))
-        CardFavoriteButton(modifier = Modifier.align(Alignment.BottomEnd)) {}
+        Row(
+            modifier = Modifier.align(Alignment.BottomEnd),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            when (cardType) {
+                CardType.FLASH_SALE -> {
+                    CardFavoriteButton {}
+                    CardAddButton(modifier = Modifier) {}
+                }
+                else -> CardAddButton(modifier = Modifier.scale(0.57f)) {}
+            }
+        }
     }
 }
 
@@ -288,21 +312,53 @@ private fun CardText(cardType: CardType, modifier: Modifier) {
 }
 
 @Composable
-private fun CardFavoriteButton(modifier: Modifier, onClick: () -> Unit) {
+private fun CardFavoriteButton(onClick: () -> Unit) {
+    var valueFavorite by remember { mutableStateOf(false) }
+    val image = if (valueFavorite) {
+        Icons.Outlined.Favorite
+    } else {
+        Icons.Outlined.FavoriteBorder
+    }
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier.clickable(onClick = onClick)
+        modifier = Modifier.clickable { valueFavorite = !valueFavorite }) {
+        Icon(
+            imageVector = Icons.Default.Circle,
+            contentDescription = null,
+            tint = LightGrayishBlue,
+            modifier = Modifier.size(28.dp)
+        )
+        Icon(
+            imageVector = image,
+            contentDescription = "Favorite",
+            tint = DarkBlue,
+            modifier = Modifier.size(12.dp)
+        )
+    }
+}
+
+@Composable
+private fun CardAddButton(modifier: Modifier, onAddClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.clickable(onClick = onAddClick)
     ) {
         Icon(
             imageVector = Icons.Default.Circle,
             contentDescription = null,
-            tint = LightGrayishBlue
+            tint = LightGrayishBlue, modifier = Modifier.size(35.dp)
         )
-        Icon(
-            imageVector = Icons.Outlined.FavoriteBorder,
-            contentDescription = "Favorite",
-            tint = DarkBlue,
-            modifier = Modifier.size(12.dp)
+        Divider(
+            color = DarkBlue,
+            thickness = 1.dp,
+            modifier = Modifier.width(12.dp)
+        )
+        Divider(
+            color = DarkBlue,
+            thickness = 1.dp,
+            modifier = Modifier
+                .width(12.dp)
+                .rotate(90f)
         )
     }
 }
