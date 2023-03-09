@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,14 +36,14 @@ import kotlinx.coroutines.launch
 
 @Preview
 @Composable
-fun MainPreview() {
+private fun MainPreview() {
     CoroutinesComposeAppTheme {
-        MainScaffold()
+        MainScreen {}
     }
 }
 
 @Composable
-fun MainScaffold() {
+fun MainScreen(onCardClicked: () -> Unit) {
     val scaffoldState =
         rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
     val coroutineScope = rememberCoroutineScope()
@@ -68,14 +69,15 @@ fun MainScaffold() {
                 onAvatarClicked = {})
         }) { paddingValues ->
         MainBody(
-            paddingValues = paddingValues,
+            modifier = Modifier.padding(paddingValues),
             valueSearch = valueSearch,
-            onValueChanged = { valueSearch = it })
+            onValueChanged = { valueSearch = it }, onCardClicked = onCardClicked
+        )
     }
 }
 
 @Composable
-fun MainTopAppBar(
+private fun MainTopAppBar(
     username: String,
     @DrawableRes avatarRes: Int,
     onMenuClicked: () -> Unit,
@@ -98,7 +100,7 @@ fun MainTopAppBar(
             IconButton(onClick = onMenuClicked) {
                 Icon(
                     imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu"
+                    contentDescription = stringResource(R.string.menu)
                 )
             }
         }
@@ -109,7 +111,10 @@ fun MainTopAppBar(
 private fun MainTitle(username: String) {
     Row {
         Text(
-            text = "trade by ",
+            text = buildString {
+                append(stringResource(R.string.trade_by))
+                append(" ")
+            },
             style = MaterialTheme.typography.h2,
             fontSize = 20.sp,
         )
@@ -130,7 +135,7 @@ private fun MainAvatar(onAvatarClicked: () -> Unit, @DrawableRes avatarRes: Int)
     ) {
         Image(
             painter = painterResource(id = avatarRes),
-            contentDescription = "Profile avatar",
+            contentDescription = stringResource(R.string.profile_avatar),
             modifier = Modifier
                 .size(30.dp)
                 .clip(MaterialTheme.shapes.large),
@@ -138,7 +143,7 @@ private fun MainAvatar(onAvatarClicked: () -> Unit, @DrawableRes avatarRes: Int)
         )
         Row {
             Text(
-                text = "Location",
+                text = stringResource(R.string.location),
                 style = MaterialTheme.typography.h6,
                 color = MaterialTheme.colors.primaryVariant
             )
@@ -154,18 +159,23 @@ private fun MainAvatar(onAvatarClicked: () -> Unit, @DrawableRes avatarRes: Int)
 }
 
 @Composable
-fun MainDrawer() {
+private fun MainDrawer() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
     }
 }
 
 @Composable
-fun MainBody(paddingValues: PaddingValues, valueSearch: String, onValueChanged: (String) -> Unit) {
+private fun MainBody(
+    modifier: Modifier,
+    valueSearch: String,
+    onValueChanged: (String) -> Unit,
+    onCardClicked: () -> Unit
+) {
     val scrollState = rememberScrollState()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight()
             .verticalScroll(state = scrollState)
@@ -179,17 +189,29 @@ fun MainBody(paddingValues: PaddingValues, valueSearch: String, onValueChanged: 
                     color = MaterialTheme.colors.surface,
                     shape = MaterialTheme.shapes.large
                 ),
-            placeholder = "What are you looking for?",
+            placeholder = stringResource(R.string.search_placeholder),
         )
         RoundCategories(TempData.listOfIcons)
-        CardGroup(cardType = CardType.LATEST) {}
-        CardGroup(cardType = CardType.FLASH_SALE) {}
-        CardGroup(cardType = CardType.BRANDS) {}
+        CardGroup(
+            cardType = CardType.LATEST,
+            onViewAllClick = {},
+            onCardClicked = onCardClicked
+        )
+        CardGroup(
+            cardType = CardType.FLASH_SALE,
+            onViewAllClick = {},
+            onCardClicked = onCardClicked
+        )
+        CardGroup(
+            cardType = CardType.BRANDS,
+            onViewAllClick = {},
+            onCardClicked = onCardClicked
+        )
     }
 }
 
 @Composable
-fun RoundCategories(listOfIcons: List<CategoryUI>) {
+private fun RoundCategories(listOfIcons: List<CategoryUI>) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -202,7 +224,7 @@ fun RoundCategories(listOfIcons: List<CategoryUI>) {
 }
 
 @Composable
-fun Category(imageVector: ImageVector, description: String) {
+private fun Category(imageVector: ImageVector, description: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(contentAlignment = Alignment.Center) {
             Icon(
@@ -223,7 +245,7 @@ fun Category(imageVector: ImageVector, description: String) {
 }
 
 @Composable
-fun CardGroup(cardType: CardType, onViewAllClick: () -> Unit) {
+private fun CardGroup(cardType: CardType, onViewAllClick: () -> Unit, onCardClicked: () -> Unit) {
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -234,7 +256,7 @@ fun CardGroup(cardType: CardType, onViewAllClick: () -> Unit) {
         ) {
             Text(text = cardType.groupName, style = MaterialTheme.typography.h2)
             Text(
-                text = "View all",
+                text = stringResource(R.string.view_all),
                 style = MaterialTheme.typography.h6.copy(color = DarkGray),
                 modifier = Modifier.clickable(onClick = onViewAllClick)
             )
@@ -243,19 +265,20 @@ fun CardGroup(cardType: CardType, onViewAllClick: () -> Unit) {
             items(
                 items = listOf(cardType, cardType, cardType, cardType, cardType, cardType)
             ) {
-                CardItem(cardType = it)
+                CardItem(cardType = it, onCardClicked = onCardClicked)
             }
         }
     }
 }
 
 @Composable
-fun CardItem(cardType: CardType) {
+private fun CardItem(cardType: CardType, onCardClicked: () -> Unit) {
     Box {
         Image(
             painter = painterResource(id = R.drawable.ic_launcher_background),
-            contentDescription = "description",
+            contentDescription = stringResource(R.string.description),
             modifier = Modifier
+                .clickable(onClick = onCardClicked)
                 .size(width = cardType.width, height = cardType.height)
                 .clip(MaterialTheme.shapes.small),
             contentScale = ContentScale.Crop
@@ -330,7 +353,7 @@ private fun CardFavoriteButton(onClick: () -> Unit) {
         )
         Icon(
             imageVector = image,
-            contentDescription = "Favorite",
+            contentDescription = stringResource(id = R.string.favorite),
             tint = DarkBlue,
             modifier = Modifier.size(12.dp)
         )

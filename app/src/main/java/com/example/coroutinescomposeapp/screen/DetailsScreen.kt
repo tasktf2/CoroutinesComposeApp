@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,49 +37,52 @@ import com.google.accompanist.pager.rememberPagerState
 
 @Preview(showBackground = true)
 @Composable
-fun DetailsPreview() {
+private fun DetailsPreview() {
     CoroutinesComposeAppTheme {
-        DetailsScaffold()
+        DetailsScreen {}
     }
 }
 
 @Composable
-fun DetailsScaffold() {
+fun DetailsScreen(onBackClicked: () -> Unit) {
     val scaffoldState = rememberScaffoldState()
     val descriptionItemUI = TempData.descriptionItemUI
     var quantity by remember { mutableStateOf(1) }
     Scaffold(
         scaffoldState = scaffoldState,
         modifier = Modifier.fillMaxSize(),
-        topBar = { DetailsTopAppBar {} }
-    ) {
+        topBar = { DetailsTopAppBar(onBackClicked = onBackClicked) }
+    ) { paddingValues ->
         DetailsBody(
-            paddingValues = it,
+            modifier = Modifier.padding(paddingValues),
             descriptionItemUI = descriptionItemUI,
             quantity = quantity,
             onMinusClicked = { if (quantity != 1) quantity -= 1 },
-            onPlusClicked = { quantity += 1 },
-            onAddToCartClicked = {})
+            onPlusClicked = { quantity += 1 }
+        ) {}
     }
 }
 
 @Composable
-fun DetailsTopAppBar(onBackClicked: () -> Unit) {
+private fun DetailsTopAppBar(onBackClicked: () -> Unit) {
     TopAppBar(
         title = { Text(text = "") },
         backgroundColor = Color.Transparent,
         elevation = 0.dp,
         navigationIcon = {
             IconButton(onClick = onBackClicked) {
-                Icon(imageVector = Icons.Rounded.ArrowBackIos, contentDescription = "Back")
+                Icon(
+                    imageVector = Icons.Rounded.ArrowBackIos,
+                    contentDescription = stringResource(R.string.back)
+                )
             }
         })
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun DetailsBody(
-    paddingValues: PaddingValues,
+private fun DetailsBody(
+    modifier: Modifier,
     descriptionItemUI: DescriptionItemUI,
     quantity: Int,
     onMinusClicked: () -> Unit,
@@ -87,7 +91,7 @@ fun DetailsBody(
 ) {
     val pagerState: PagerState = rememberPagerState()
     val scrollState = rememberScrollState()
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -120,7 +124,7 @@ fun DetailsBody(
     }
 }
 
-fun calculateTotalPrice(price: Double, quantity: Int): Double = price * quantity
+private fun calculateTotalPrice(price: Double, quantity: Int): Double = price * quantity
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
@@ -144,7 +148,7 @@ private fun DetailsPager(
         ) {
             Image(
                 painter = painterResource(id = images[page]),
-                contentDescription = "Product image",
+                contentDescription = stringResource(R.string.product_image),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .size(width = 328.dp, height = 279.dp)
@@ -171,7 +175,7 @@ private fun DetailsPager(
                 IconButton(onClick = { valueFavorite = !valueFavorite }) { //stub
                     Icon(
                         imageVector = image,
-                        contentDescription = "Favorite",
+                        contentDescription = stringResource(R.string.favorite),
                         tint = DarkBlue
                     )
                 }
@@ -179,7 +183,7 @@ private fun DetailsPager(
                 IconButton(onClick = onShareClick) {
                     Icon(
                         imageVector = Icons.Outlined.Share,
-                        contentDescription = "Share",
+                        contentDescription = stringResource(R.string.share),
                         tint = DarkBlue
                     )
                 }
@@ -259,7 +263,7 @@ private fun ItemDescription(descriptionItemUI: DescriptionItemUI) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.StarOutline,
-                contentDescription = "Rating",
+                contentDescription = stringResource(R.string.rating),
                 tint = BrightOrange
             )
             Text(
@@ -268,13 +272,19 @@ private fun ItemDescription(descriptionItemUI: DescriptionItemUI) {
                 fontSize = 9.sp
             )
             Text(
-                text = " (${descriptionItemUI.itemCountOfReviews} reviews)",
+                text = buildString {
+                    append(" (")
+                    append(descriptionItemUI.itemCountOfReviews)
+                    append(" ")
+                    append(stringResource(R.string.reviews))
+                    append(")")
+                },
                 style = MaterialTheme.typography.h6,
                 color = DarkGray
             )
         }
         Text(
-            text = "Color:",
+            text = stringResource(R.string.color),
             style = MaterialTheme.typography.h1,
             fontSize = 10.sp,
             color = DarkGray
@@ -343,7 +353,11 @@ private fun AddToCart(
             modifier = Modifier.fillMaxWidth(0.35f),
             verticalArrangement = Arrangement.SpaceAround
         ) {
-            Text(text = "Quantity:", style = MaterialTheme.typography.h6, color = DarkGray)
+            Text(
+                text = stringResource(R.string.quantity),
+                style = MaterialTheme.typography.h6,
+                color = DarkGray
+            )
             Spacer(modifier = Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 Button(
@@ -397,7 +411,7 @@ private fun AddToCart(
                     fontSize = 8.sp
                 )
                 Text(
-                    text = "ADD TO CART",
+                    text = stringResource(R.string.add_to_cart),
                     style = MaterialTheme.typography.h6,
                     color = Color.White,
                     fontSize = 8.sp

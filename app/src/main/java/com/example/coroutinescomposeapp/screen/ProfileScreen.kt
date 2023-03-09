@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,34 +29,22 @@ import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
 import com.example.coroutinescomposeapp.ui.theme.DarkGray
 import kotlinx.coroutines.launch
 
+@Preview(showBackground = true)
 @Composable
-fun ProfileAvatar(@DrawableRes avatarRes: Int, modifier: Modifier, onClick: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.clickable(onClick = onClick)
-    ) {
-        Spacer(modifier = Modifier.height(18.dp))
-        Image(
-            painter = painterResource(id = avatarRes),
-            contentDescription = "Profile avatar",
-            modifier = Modifier
-                .size(60.dp)
-                .clip(MaterialTheme.shapes.large),
-            contentScale = ContentScale.Crop
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Change photo", style = MaterialTheme.typography.h6, color = DarkGray)
+private fun ProfileScreenPreview() {
+    CoroutinesComposeAppTheme {
+        ProfileScreen()
     }
 }
 
-@Preview
 @Composable
-fun ProfileScaffold() {
+fun ProfileScreen() {
     val scaffoldState =
         rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
     val coroutineScope = rememberCoroutineScope()
     CoroutinesComposeAppTheme {
-        Scaffold(scaffoldState = scaffoldState,
+        Scaffold(
+            scaffoldState = scaffoldState,
             modifier = Modifier.fillMaxHeight(),
             topBar = {
                 ProfileTopAppBar(onClick = {
@@ -63,53 +52,8 @@ fun ProfileScaffold() {
                         scaffoldState.snackbarHostState.showSnackbar("TEST")
                     }
                 })
-            }) {
-            it
-            ProfilePreview()
-        }
-    }
-}
-
-@Composable
-fun ProfilePreview() {
-    CoroutinesComposeAppTheme {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            ProfileAvatar(
-                avatarRes = R.drawable.ic_launcher_background,
-                modifier = Modifier.weight(0.2f)
-            ) {}
-            Text(
-                text = "SetJy",
-                style = MaterialTheme.typography.h2,
-                modifier = Modifier.weight(0.1f)
-            )
-            UploadItemButton(modifier = Modifier.weight(0.1f)) {}
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.weight(0.6f)
-            ) {
-                ProfileTextButton("Trade store") {}
-                ProfileTextButton("Payment Method") {}
-                ProfileTextButton("Balance", cashCount = 1538) {}
-                ProfileTextButton(
-                    "Restore Purchase",
-                    imageVector = Icons.Rounded.Cached,
-                    isArrowVisible = false
-                ) {}
-                ProfileTextButton(
-                    "Help",
-                    imageVector = Icons.Rounded.HelpOutline,
-                    isArrowVisible = false
-                ) {}
-                ProfileTextButton(
-                    "Log out",
-                    imageVector = Icons.Outlined.Logout,
-                    isArrowVisible = false
-                ) {}
-            }
+            }) { paddingValues ->
+            ProfileBody(modifier = Modifier.padding(paddingValues))
         }
     }
 }
@@ -120,7 +64,7 @@ private fun ProfileTopAppBar(onClick: () -> Unit) {
         elevation = 0.dp,
         title = {
             Text(
-                text = "Profile",
+                text = stringResource(R.string.profile),
                 style = MaterialTheme.typography.h2,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(0.8f)
@@ -131,10 +75,77 @@ private fun ProfileTopAppBar(onClick: () -> Unit) {
             IconButton(onClick = onClick) {
                 Icon(
                     imageVector = Icons.Rounded.ArrowBackIos,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(id = R.string.back),
                 )
             }
         })
+}
+
+@Composable
+private fun ProfileAvatar(@DrawableRes avatarRes: Int, modifier: Modifier, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.clickable(onClick = onClick)
+    ) {
+        Spacer(modifier = Modifier.height(18.dp))
+        Image(
+            painter = painterResource(id = avatarRes),
+            contentDescription = stringResource(id = R.string.profile_avatar),
+            modifier = Modifier
+                .size(60.dp)
+                .clip(MaterialTheme.shapes.large),
+            contentScale = ContentScale.Crop
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.change_photo),
+            style = MaterialTheme.typography.h6,
+            color = DarkGray
+        )
+    }
+}
+
+@Composable
+private fun ProfileBody(modifier: Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        ProfileAvatar(
+            avatarRes = R.drawable.ic_launcher_background,
+            modifier = Modifier.weight(0.2f)
+        ) {}
+        Text(
+            text = "SetJy",
+            style = MaterialTheme.typography.h2,
+            modifier = Modifier.weight(0.1f)
+        )
+        UploadItemButton(modifier = Modifier.weight(0.1f)) {}
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.weight(0.6f)
+        ) {
+            ProfileTextButton(text = stringResource(R.string.trade_store)) {}
+            ProfileTextButton(text = stringResource(R.string.payment_method)) {}
+            ProfileTextButton(text = stringResource(R.string.balance), cashCount = 1538) {}
+            ProfileTextButton(
+                text = stringResource(R.string.restore_purchase),
+                imageVector = Icons.Rounded.Cached,
+                isArrowVisible = false
+            ) {}
+            ProfileTextButton(
+                text = stringResource(R.string.help),
+                imageVector = Icons.Rounded.HelpOutline,
+                isArrowVisible = false
+            ) {}
+            ProfileTextButton(
+                text = stringResource(R.string.log_out),
+                imageVector = Icons.Outlined.Logout,
+                isArrowVisible = false
+            ) {}
+        }
+    }
 }
 
 @Composable
@@ -151,13 +162,13 @@ private fun UploadItemButton(modifier: Modifier, onClick: () -> Unit) {
         ) {
             Image(
                 imageVector = Icons.Rounded.Upload,
-                contentDescription = "Upload item",
+                contentDescription = stringResource(R.string.upload_item),
                 colorFilter = ColorFilter.tint(Color.White),
                 modifier = Modifier.fillMaxWidth(0.2f),
                 alignment = Alignment.CenterStart
             )
             Text(
-                text = "Upload item",
+                text = stringResource(R.string.upload_item),
                 modifier = Modifier.fillMaxWidth(0.6f),
                 style = MaterialTheme.typography.button
             )

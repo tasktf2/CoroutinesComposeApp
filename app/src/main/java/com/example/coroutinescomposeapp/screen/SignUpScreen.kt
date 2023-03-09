@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,28 +27,26 @@ import com.example.coroutinescomposeapp.ui.theme.VeryLightGray
 
 @Preview(showBackground = true)
 @Composable
-fun SignUpPreview() {
+private fun SignUpPreview() {
     CoroutinesComposeAppTheme {
-        SignUpScreen()
+        SignUpScreen({}, {})
     }
 }
 
 @Composable
-private fun SignUpScreen() {
+fun SignUpScreen(onSignUpClicked: () -> Unit, onLoginClicked: () -> Unit) {
 
     var valueFirstName by remember { mutableStateOf("") }
     var valueSecondName by remember { mutableStateOf("") }
     var valueEmail by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
         Column(modifier = Modifier.weight(0.2f), verticalArrangement = Arrangement.Center) {
-            HeaderText("Sign Up")
+            HeaderText(stringResource(id = R.string.sign_up))
         }
         Column(
             modifier = Modifier.weight(0.5f),
@@ -55,7 +54,7 @@ private fun SignUpScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             CustomTextField(
-                placeholder = "First name",
+                placeholder = stringResource(R.string.first_name),
                 value = valueFirstName,
                 onValueChange = { valueFirstName = it },
                 modifier = Modifier
@@ -63,7 +62,7 @@ private fun SignUpScreen() {
                     .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
             )
             CustomTextField(
-                placeholder = "Second name",
+                placeholder = stringResource(R.string.second_name),
                 value = valueSecondName,
                 onValueChange = { valueSecondName = it },
                 modifier = Modifier
@@ -71,33 +70,33 @@ private fun SignUpScreen() {
                     .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
             )
             CustomTextField(
-                placeholder = "E-mail",
+                placeholder = stringResource(id = R.string.e_mail),
                 value = valueEmail,
                 onValueChange = { valueEmail = it },
                 modifier = Modifier
                     .height(29.dp)
                     .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
             )
-            ButtonWithText(text = "Sign up") {}
+            ButtonWithText(text = stringResource(id = R.string.sign_up), onClick = onSignUpClicked)
         }
 
-        SignInText(modifier = Modifier.weight(0.05f)) {}
+        SignInText(modifier = Modifier.weight(0.05f), onClick = onLoginClicked)
 
         Column(
             modifier = Modifier.weight(0.25f), verticalArrangement = Arrangement.Top
         ) {
             SignUpWithAnotherResource(
-                imageRes = R.drawable.ic_google, resource = "Google"
+                imageRes = R.drawable.ic_google, resource = stringResource(R.string.google)
             ) {}
             SignUpWithAnotherResource(
-                imageRes = R.drawable.ic_apple, resource = "Apple"
+                imageRes = R.drawable.ic_apple, resource = stringResource(R.string.apple)
             ) {}
         }
     }
 }
 
 @Composable
-fun CustomTextField(
+internal fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -153,7 +152,7 @@ fun CustomTextField(
 }
 
 @Composable
-fun ButtonWithText(text: String, onClick: () -> Unit) {
+internal fun ButtonWithText(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
@@ -173,11 +172,14 @@ private fun SignInText(modifier: Modifier, onClick: () -> Unit) {
             .padding(top = 10.dp)
     ) {
         Text(
-            text = "Already have an account? ",
+            text = buildString {
+                append(stringResource(R.string.already_have_an_account))
+                append(" ")
+            },
             style = MaterialTheme.typography.h6
         )
         Text(
-            text = "Sign in",
+            text = stringResource(R.string.sign_in),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.clickable(onClick = onClick),
             color = MaterialTheme.colors.primary
@@ -186,7 +188,11 @@ private fun SignInText(modifier: Modifier, onClick: () -> Unit) {
 }
 
 @Composable
-fun SignUpWithAnotherResource(@DrawableRes imageRes: Int, resource: String, onClick: () -> Unit) {
+private fun SignUpWithAnotherResource(
+    @DrawableRes imageRes: Int,
+    resource: String,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(top = 8.dp)
