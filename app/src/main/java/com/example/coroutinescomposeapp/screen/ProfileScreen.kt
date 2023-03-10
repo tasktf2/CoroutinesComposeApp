@@ -11,7 +11,6 @@ import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,58 +26,58 @@ import androidx.compose.ui.unit.dp
 import com.example.coroutinescomposeapp.R
 import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
 import com.example.coroutinescomposeapp.ui.theme.DarkGray
-import kotlinx.coroutines.launch
 
 @Preview(showBackground = true)
 @Composable
 private fun ProfileScreenPreview() {
     CoroutinesComposeAppTheme {
-        ProfileScreen()
+        ProfileScreen({}, {})
     }
 }
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(onBackClicked: () -> Unit, onLogOutClicked: () -> Unit) {
     val scaffoldState =
         rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
-    val coroutineScope = rememberCoroutineScope()
     CoroutinesComposeAppTheme {
         Scaffold(
             scaffoldState = scaffoldState,
             modifier = Modifier.fillMaxHeight(),
             topBar = {
-                ProfileTopAppBar(onClick = {
-                    coroutineScope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar("TEST")
-                    }
-                })
+                ProfileTopAppBar(onBackClicked = onBackClicked)
             }) { paddingValues ->
-            ProfileBody(modifier = Modifier.padding(paddingValues))
+            ProfileBody(
+                modifier = Modifier.padding(paddingValues),
+                onLogOutClicked = onLogOutClicked
+            )
         }
     }
 }
 
 @Composable
-private fun ProfileTopAppBar(onClick: () -> Unit) {
+private fun ProfileTopAppBar(onBackClicked: () -> Unit) {
     TopAppBar(
         elevation = 0.dp,
-        title = {
-            Text(
-                text = stringResource(R.string.profile),
-                style = MaterialTheme.typography.h2,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
-        },
-        backgroundColor = Color.White,
-        navigationIcon = {
-            IconButton(onClick = onClick) {
+        backgroundColor = Color.White
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            IconButton(
+                onClick = onBackClicked, modifier = Modifier.align(Alignment.CenterStart)
+            ) {
                 Icon(
                     imageVector = Icons.Rounded.ArrowBackIos,
                     contentDescription = stringResource(id = R.string.back),
+                    tint = Color.Black
                 )
             }
-        })
+            Text(
+                text = stringResource(R.string.profile),
+                style = MaterialTheme.typography.h2,
+                color = Color.Black,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
 }
 
 @Composable
@@ -87,7 +86,6 @@ private fun ProfileAvatar(@DrawableRes avatarRes: Int, modifier: Modifier, onCli
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.clickable(onClick = onClick)
     ) {
-        Spacer(modifier = Modifier.height(18.dp))
         Image(
             painter = painterResource(id = avatarRes),
             contentDescription = stringResource(id = R.string.profile_avatar),
@@ -106,7 +104,7 @@ private fun ProfileAvatar(@DrawableRes avatarRes: Int, modifier: Modifier, onCli
 }
 
 @Composable
-private fun ProfileBody(modifier: Modifier) {
+private fun ProfileBody(modifier: Modifier, onLogOutClicked: () -> Unit) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -114,12 +112,12 @@ private fun ProfileBody(modifier: Modifier) {
     ) {
         ProfileAvatar(
             avatarRes = R.drawable.ic_launcher_background,
-            modifier = Modifier.weight(0.2f)
+            modifier = Modifier.weight(0.22f)
         ) {}
         Text(
             text = "SetJy",
             style = MaterialTheme.typography.h2,
-            modifier = Modifier.weight(0.1f)
+            modifier = Modifier.weight(0.08f)
         )
         UploadItemButton(modifier = Modifier.weight(0.1f)) {}
         Column(
@@ -142,8 +140,9 @@ private fun ProfileBody(modifier: Modifier) {
             ProfileTextButton(
                 text = stringResource(R.string.log_out),
                 imageVector = Icons.Outlined.Logout,
-                isArrowVisible = false
-            ) {}
+                isArrowVisible = false,
+                onClick = onLogOutClicked
+            )
         }
     }
 }
