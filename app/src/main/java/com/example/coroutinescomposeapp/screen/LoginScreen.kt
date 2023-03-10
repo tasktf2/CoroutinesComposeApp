@@ -12,23 +12,25 @@ import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.coroutinescomposeapp.R
 import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
 import com.example.coroutinescomposeapp.ui.theme.VeryLightGray
 
 @Preview(showBackground = true)
 @Composable
-fun LoginPreview() {
+private fun LoginPreview() {
     CoroutinesComposeAppTheme {
-        LoginScreen()
+        LoginScreen {}
     }
 }
 
 @Composable
-private fun LoginScreen() {
+fun LoginScreen(onLoginClicked: () -> Unit) {
     var valueEmail by remember {
         mutableStateOf("")
     }
@@ -47,14 +49,14 @@ private fun LoginScreen() {
         verticalArrangement = Arrangement.Top
     ) {
         Column(modifier = Modifier.fillMaxHeight(0.2f), verticalArrangement = Arrangement.Center) {
-            HeaderText("Welcome back")
+            HeaderText(stringResource(id = R.string.login_welcome_back))
         }
 
         Column(
             modifier = Modifier.fillMaxHeight(0.45f), verticalArrangement = Arrangement.SpaceBetween
         ) {
             CustomTextField(
-                placeholder = "E-mail",
+                placeholder = stringResource(R.string.e_mail),
                 value = valueEmail,
                 onValueChange = { valueEmail = it },
                 modifier = Modifier
@@ -63,7 +65,7 @@ private fun LoginScreen() {
                     .background(color = VeryLightGray, shape = MaterialTheme.shapes.large)
             )
             CustomTextField(
-                placeholder = "Password",
+                placeholder = stringResource(R.string.password),
                 value = valuePassword,
                 onValueChange = { valuePassword = it },
                 modifier = Modifier
@@ -77,8 +79,8 @@ private fun LoginScreen() {
                         Icons.Outlined.VisibilityOff
                     }
                     val description = when {
-                        passwordVisibility -> "Hide password"
-                        else -> "Show password"
+                        passwordVisibility -> stringResource(R.string.hide_password)
+                        else -> stringResource(R.string.show_password)
                     }
                     IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                         Icon(imageVector = image, contentDescription = description)
@@ -90,13 +92,13 @@ private fun LoginScreen() {
                     PasswordVisualTransformation()
                 }
             )
-            ButtonWithText(text = "Login") {}
+            ButtonWithText(text = stringResource(R.string.login), onClick = onLoginClicked)
         }
     }
 }
 
 @Composable
-fun HeaderText(text: String) {
+internal fun HeaderText(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.h1
