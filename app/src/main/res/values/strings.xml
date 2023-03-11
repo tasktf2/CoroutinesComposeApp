@@ -40,4 +40,6 @@
     <string name="log_out">Log out</string>
     <string name="profile">Profile</string>
     <string name="upload_item">Upload item</string>
+    <string name="image_request_failure">Image request failed.</string>
+    <string name="discount">% off</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.coroutinescomposeapp.screen.base
+package com.example.coroutinescomposeapp.ui.model
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -12,6 +12,10 @@ enum class CardType(
     val categoryFontSize: Int,
     val nameFontSize: Int,
     val priceFontSize: Int,
+    val startPadding: Dp,
+    val categoryTopPadding: Dp,
+    val itemNameTopPadding: Dp,
+    val priceBottomPadding: Dp,
 ) {
     LATEST(
         groupName = "Latest",
@@ -21,7 +25,11 @@ enum class CardType(
         categoryPaddingHorizontal = 7.dp,
         categoryFontSize = 6,
         nameFontSize = 9,
-        priceFontSize = 7
+        priceFontSize = 7,
+        startPadding = 7.dp,
+        categoryTopPadding = 91.dp,
+        itemNameTopPadding = 106.dp,
+        priceBottomPadding = (-7).dp
     ),
     FLASH_SALE(
         groupName = "Flash Sale",
@@ -31,7 +39,11 @@ enum class CardType(
         categoryPaddingHorizontal = 17.dp,
         categoryFontSize = 9,
         nameFontSize = 13,
-        priceFontSize = 10
+        priceFontSize = 10,
+        startPadding = 9.dp,
+        categoryTopPadding = 121.dp,
+        itemNameTopPadding = 144.dp,
+        priceBottomPadding = (-17).dp
     ),
     BRANDS(
         groupName = "Brands",
@@ -41,6 +53,10 @@ enum class CardType(
         categoryPaddingHorizontal = 7.dp,
         categoryFontSize = 6,
         nameFontSize = 9,
-        priceFontSize = 7
+        priceFontSize = 7,
+        startPadding = 7.dp,
+        categoryTopPadding = 91.dp,
+        itemNameTopPadding = 106.dp,
+        priceBottomPadding = (-7).dp
     )
 }

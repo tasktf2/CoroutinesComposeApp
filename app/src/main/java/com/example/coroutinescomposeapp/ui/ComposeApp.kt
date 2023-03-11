@@ -1,4 +1,4 @@
-package com.example.coroutinescomposeapp
+package com.example.coroutinescomposeapp.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExitTransition
@@ -22,12 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.coroutinescomposeapp.screen.*
+import com.example.coroutinescomposeapp.ui.screen.*
 import com.example.coroutinescomposeapp.ui.theme.DarkGray
 import com.example.coroutinescomposeapp.ui.theme.DarkGrayishBlue
 import com.example.coroutinescomposeapp.ui.theme.LightGrayishBlue
@@ -49,7 +50,7 @@ enum class BottomMenu(val icon: ImageVector) {
 @Composable
 fun ComposeApp(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
 ) {
     var bottomAppBarVisibility by rememberSaveable { mutableStateOf(true) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -57,7 +58,6 @@ fun ComposeApp(
         ComposeScreen.SignUp.name, ComposeScreen.Login.name -> false
         else -> true
     }
-
     Scaffold(
         bottomBar = {
             AnimatedVisibility(
@@ -91,16 +91,24 @@ fun ComposeApp(
                 }
             }
             composable(route = BottomMenu.Main.name) {
-                MainScreen {
-                    navController.navigate(ComposeScreen.Details.name)
-                    //here should be put id of product but API is being mocked
-                }
+                val mainViewModel: MainViewModel = viewModel()
+                MainScreen(
+                    uiState = mainViewModel.uiState,
+                    modifier = modifier,
+                    onCardClicked = { navController.navigate(ComposeScreen.Details.name) }
+                )
             }
             composable(route = ComposeScreen.Details.name) {
-                DetailsScreen { navController.popBackStack() }
+                val detailsViewModel: DetailsViewModel = viewModel()
+                DetailsScreen(
+                    uiState = detailsViewModel.uiState,
+                    modifier = modifier,
+                    onBackClicked = navController::popBackStack,
+                    onAddToCartClicked = { navController.navigate(BottomMenu.Cart.name) }
+                )
             }
             composable(route = BottomMenu.Profile.name) {
-                ProfileScreen(onBackClicked = { navController.popBackStack() },
+                ProfileScreen(onBackClicked = navController::popBackStack,
                     onLogOutClicked = {
                         navController.backQueue.clear()
                         navController.navigate(ComposeScreen.SignUp.name)

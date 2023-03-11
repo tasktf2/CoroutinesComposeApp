@@ -1,4 +1,4 @@
-package com.example.coroutinescomposeapp.screen
+package com.example.coroutinescomposeapp.ui.screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,8 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun SimpleScreen(screenName: String) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Text(text = screenName, modifier = Modifier.align(Alignment.Center))
+fun ErrorScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(text = "Error")
     }
 }

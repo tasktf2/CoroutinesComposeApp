@@ -1,4 +1,4 @@
-package com.example.coroutinescomposeapp.screen
+package com.example.coroutinescomposeapp.ui.screen
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
