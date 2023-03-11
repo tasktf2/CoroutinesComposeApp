@@ -1,4 +1,4 @@
-package com.example.coroutinescomposeapp.model
+package com.example.coroutinescomposeapp.ui.model
 
 import androidx.compose.ui.graphics.vector.ImageVector
 

@@ -1,4 +1,4 @@
-package com.example.coroutinescomposeapp.screen
+package com.example.coroutinescomposeapp.ui.screen
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.*
@@ -19,18 +19,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.coroutinescomposeapp.R
-import com.example.coroutinescomposeapp.model.CategoryUI
-import com.example.coroutinescomposeapp.screen.base.CardType
-import com.example.coroutinescomposeapp.screen.base.TempData
+import com.example.coroutinescomposeapp.di.TempData
+import com.example.coroutinescomposeapp.ui.model.CardItemUI
+import com.example.coroutinescomposeapp.ui.model.CategoryUI
+import com.example.coroutinescomposeapp.ui.model.CardType
 import com.example.coroutinescomposeapp.ui.theme.*
+import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.launch
 
 
@@ -38,12 +42,31 @@ import kotlinx.coroutines.launch
 @Composable
 private fun MainPreview() {
     CoroutinesComposeAppTheme {
-        MainScreen {}
+        MainSuccessScreen({}, listOf(), listOf(), Modifier)
     }
 }
 
 @Composable
-fun MainScreen(onCardClicked: () -> Unit) {
+fun MainScreen(uiState: MainState, modifier: Modifier, onCardClicked: () -> Unit) {
+    when (uiState) {
+        is MainState.Loading -> LoadingScreen()
+        is MainState.Success -> MainSuccessScreen(
+            onCardClicked = onCardClicked,
+            latestList = uiState.latestProducts,
+            flashList = uiState.flashSaleProducts,
+            modifier = modifier
+        )
+        is MainState.Error -> ErrorScreen()
+    }
+}
+
+@Composable
+fun MainSuccessScreen(
+    onCardClicked: () -> Unit,
+    latestList: List<CardItemUI>,
+    flashList: List<CardItemUI>,
+    modifier: Modifier
+) {
     val scaffoldState =
         rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
     val coroutineScope = rememberCoroutineScope()
@@ -52,9 +75,7 @@ fun MainScreen(onCardClicked: () -> Unit) {
 
     Scaffold(
         scaffoldState = scaffoldState,
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
+        modifier = modifier.fillMaxSize(),
         backgroundColor = MaterialTheme.colors.background,
         drawerContent = { MainDrawer() },
         topBar = {
@@ -71,7 +92,10 @@ fun MainScreen(onCardClicked: () -> Unit) {
         MainBody(
             modifier = Modifier.padding(paddingValues),
             valueSearch = valueSearch,
-            onValueChanged = { valueSearch = it }, onCardClicked = onCardClicked
+            onValueChanged = { valueSearch = it },
+            onCardClicked = onCardClicked,
+            latest = latestList,
+            flash = flashList
         )
     }
 }
@@ -169,7 +193,9 @@ private fun MainBody(
     modifier: Modifier,
     valueSearch: String,
     onValueChanged: (String) -> Unit,
-    onCardClicked: () -> Unit
+    onCardClicked: () -> Unit,
+    latest: List<CardItemUI>,
+    flash: List<CardItemUI>
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -195,17 +221,20 @@ private fun MainBody(
         CardGroup(
             cardType = CardType.LATEST,
             onViewAllClick = {},
-            onCardClicked = onCardClicked
+            onCardClicked = onCardClicked,
+            cardItems = latest
         )
         CardGroup(
             cardType = CardType.FLASH_SALE,
             onViewAllClick = {},
-            onCardClicked = onCardClicked
+            onCardClicked = onCardClicked,
+            cardItems = flash
         )
         CardGroup(
             cardType = CardType.BRANDS,
             onViewAllClick = {},
-            onCardClicked = onCardClicked
+            onCardClicked = onCardClicked,
+            cardItems = latest
         )
     }
 }
@@ -245,7 +274,12 @@ private fun Category(imageVector: ImageVector, description: String) {
 }
 
 @Composable
-private fun CardGroup(cardType: CardType, onViewAllClick: () -> Unit, onCardClicked: () -> Unit) {
+private fun CardGroup(
+    cardType: CardType,
+    onViewAllClick: () -> Unit,
+    onCardClicked: () -> Unit,
+    cardItems: List<CardItemUI>
+) {
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -263,74 +297,187 @@ private fun CardGroup(cardType: CardType, onViewAllClick: () -> Unit, onCardClic
         }
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(
-                items = listOf(cardType, cardType, cardType, cardType, cardType, cardType)
-            ) {
-                CardItem(cardType = it, onCardClicked = onCardClicked)
+                items = cardItems
+            ) { item ->
+                CardItem(cardType = cardType, cardItem = item, onCardClicked = onCardClicked)
             }
         }
     }
 }
 
 @Composable
-private fun CardItem(cardType: CardType, onCardClicked: () -> Unit) {
-    Box {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_background),
-            contentDescription = stringResource(R.string.description),
+private fun CardItem(cardType: CardType, cardItem: CardItemUI, onCardClicked: () -> Unit) {
+
+    val textModifier = Modifier
+        .widthIn(max = cardType.width / 1.5f)
+        .padding(start = cardType.startPadding)
+
+    Box(
+        modifier = Modifier.clip(MaterialTheme.shapes.small)
+    ) {
+        GlideImage(
+            imageModel = { cardItem.itemImageUrl },
             modifier = Modifier
                 .clickable(onClick = onCardClicked)
                 .size(width = cardType.width, height = cardType.height)
                 .clip(MaterialTheme.shapes.small),
-            contentScale = ContentScale.Crop
-        )
-        CardText(cardType, Modifier.align(Alignment.BottomStart))
-        Row(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            when (cardType) {
-                CardType.FLASH_SALE -> {
-                    CardFavoriteButton {}
-                    CardAddButton(modifier = Modifier) {}
+            loading = {
+                Box(modifier = Modifier.matchParentSize()) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
-                else -> CardAddButton(modifier = Modifier.scale(0.57f)) {}
-            }
-        }
+            },
+            failure = {
+                Text(text = stringResource(id = R.string.image_request_failure))
+            })
+        CardShadow(cardType = cardType, modifier = Modifier.align(Alignment.BottomCenter))
+        CardCategory(
+            modifier = textModifier.align(Alignment.TopStart),
+            cardType = cardType,
+            cardItem = cardItem
+        )
+        CardName(
+            cardItem = cardItem,
+            cardType = cardType,
+            modifier = textModifier.align(Alignment.TopStart)
+        )
+        CardPrice(
+            cardItem = cardItem,
+            cardType = cardType,
+            modifier = textModifier.align(Alignment.BottomStart)
+        )
+        CardButtons(cardType = cardType, modifier = Modifier.align(Alignment.BottomEnd))
+        CardDiscount(
+            cardType = cardType,
+            cardItem = cardItem,
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
     }
 }
 
 @Composable
-private fun CardText(cardType: CardType, modifier: Modifier) {
-    Column(
+private fun CardShadow(cardType: CardType, modifier: Modifier) {
+    Box(modifier = modifier) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_launcher_background),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(BlackTransparent),
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier
+                .size(
+                    width = cardType.width,
+                    height = cardType.height - cardType.itemNameTopPadding
+                )
+        )
+    }
+}
+
+@Composable
+private fun CardCategory(
+    modifier: Modifier,
+    cardType: CardType,
+    cardItem: CardItemUI
+) {
+    Box(
         modifier = modifier
-            .widthIn(max = cardType.width / 1.5f)
+            .offset(y = cardType.categoryTopPadding)
+            .background(
+                color = SilverSand,
+                shape = MaterialTheme.shapes.large
+            )
     ) {
         Text(
-            text = "Headphones",
+            text = cardItem.itemCategory,
             style = MaterialTheme.typography.h6.copy(fontSize = cardType.categoryFontSize.sp),
             modifier = Modifier
-                .background(
-                    color = SilverSand,
-                    shape = MaterialTheme.shapes.large
-                )
+                .align(Alignment.Center)
                 .padding(
                     horizontal = cardType.categoryPaddingHorizontal,
                     vertical = cardType.categoryPaddingVertical
                 )
         )
-        Text(
-            text = "Item Name",
-            style = MaterialTheme.typography.body2,
-            fontSize = cardType.nameFontSize.sp,
-            color = Color.White
-        )
-        Text(
-            text = "$ Item Price",
-            style = MaterialTheme.typography.body2.copy(fontSize = 10.sp),
-            fontSize = cardType.priceFontSize.sp,
-            color = Color.White
-        )
+    }
+}
+
+@Composable
+private fun CardName(
+    cardItem: CardItemUI,
+    cardType: CardType,
+    modifier: Modifier
+) {
+    Text(
+        text = cardItem.itemName,
+        style = MaterialTheme.typography.body2,
+        fontSize = cardType.nameFontSize.sp,
+        color = Color.White,
+        modifier = modifier.offset(y = cardType.itemNameTopPadding)
+    )
+}
+
+@Composable
+private fun CardPrice(
+    cardItem: CardItemUI,
+    cardType: CardType,
+    modifier: Modifier
+) {
+    Text(
+        text = buildString {
+            append("$ ")
+            append(cardItem.itemPrice)
+        },
+        style = MaterialTheme.typography.body2.copy(fontSize = 10.sp),
+        fontSize = cardType.priceFontSize.sp,
+        color = Color.White,
+        modifier = modifier.offset(y = cardType.priceBottomPadding)
+    )
+}
+
+@Composable
+private fun CardButtons(cardType: CardType, modifier: Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        when (cardType) {
+            CardType.FLASH_SALE -> {
+                CardFavoriteButton {}
+                CardAddButton(modifier = Modifier) {}
+            }
+            else -> CardAddButton(modifier = Modifier.scale(0.57f)) {}
+        }
+    }
+}
+
+@Composable
+private fun CardDiscount(
+    cardType: CardType,
+    cardItem: CardItemUI,
+    modifier: Modifier
+) {
+    if (cardType == CardType.FLASH_SALE) {
+        Box(
+            modifier = modifier
+                .size(width = 56.dp, height = 24.dp)
+                .padding(top = 7.dp, end = 8.dp)
+                .background(color = BrightRed, shape = MaterialTheme.shapes.large)
+
+        ) {
+            Text(
+                text = buildString {
+                    append(cardItem.itemDiscount)
+                    append(stringResource(R.string.discount))
+                },
+                style = MaterialTheme.typography.h1,
+                fontSize = 10.sp,
+                color = Color.White,
+                modifier = Modifier
+                    .align(Alignment.Center)
+            )
+
+        }
+
     }
 }
 
