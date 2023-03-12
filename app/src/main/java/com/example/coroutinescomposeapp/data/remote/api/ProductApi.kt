@@ -3,7 +3,7 @@ package com.example.coroutinescomposeapp.data.remote.api
 import com.example.coroutinescomposeapp.data.remote.response.ProductsResponse
 import retrofit2.http.GET
 
-interface ImageApi {
+interface ProductApi {
     @GET("cc0071a1-f06e-48fa-9e90-b1c2a61eaca7")
     suspend fun getLatestItems(): ProductsResponse
 

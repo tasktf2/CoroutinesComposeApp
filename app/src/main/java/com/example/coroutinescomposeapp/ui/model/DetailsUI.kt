@@ -1,6 +1,8 @@
 package com.example.coroutinescomposeapp.ui.model
 
-data class DetailsItemUI(
+import com.example.coroutinescomposeapp.ui.base.Item
+
+data class DetailsUI(
     val itemName: String,
     val itemDescription: String,
     val itemPrice: Double,
@@ -9,4 +11,4 @@ data class DetailsItemUI(
     val colors: List<String>,
     val itemImages: List<String>,
     val isFavorite: Boolean = false
-)
+) : Item
