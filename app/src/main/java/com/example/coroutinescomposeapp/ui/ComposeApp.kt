@@ -91,7 +91,7 @@ fun ComposeApp(
                 }
             }
             composable(route = BottomMenu.Main.name) {
-                val mainViewModel: MainViewModel = viewModel()
+                val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.factory)
                 MainScreen(
                     uiState = mainViewModel.uiState,
                     modifier = modifier,
@@ -99,7 +99,8 @@ fun ComposeApp(
                 )
             }
             composable(route = ComposeScreen.Details.name) {
-                val detailsViewModel: DetailsViewModel = viewModel()
+                val detailsViewModel: DetailsViewModel =
+                    viewModel(factory = DetailsViewModel.factory)
                 DetailsScreen(
                     uiState = detailsViewModel.uiState,
                     modifier = modifier,
