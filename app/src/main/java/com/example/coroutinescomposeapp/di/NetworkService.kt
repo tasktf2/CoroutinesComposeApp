@@ -1,7 +1,7 @@
 package com.example.coroutinescomposeapp.di
 
 import com.example.coroutinescomposeapp.data.remote.api.DetailsApi
-import com.example.coroutinescomposeapp.data.remote.api.ImageApi
+import com.example.coroutinescomposeapp.data.remote.api.ProductApi
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -43,6 +43,6 @@ object NetworkService {
             .build()
     }
 
-    val productApi: ImageApi by lazy { retrofit.create(ImageApi::class.java) }
+    val productApi: ProductApi by lazy { retrofit.create(ProductApi::class.java) }
     val detailsApi: DetailsApi by lazy { retrofit.create(DetailsApi::class.java) }
 }

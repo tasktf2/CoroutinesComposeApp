@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.coroutinescomposeapp.R
+import com.example.coroutinescomposeapp.ui.model.UserUI
 import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
 import com.example.coroutinescomposeapp.ui.theme.DarkGray
 
@@ -31,12 +32,29 @@ import com.example.coroutinescomposeapp.ui.theme.DarkGray
 @Composable
 private fun ProfileScreenPreview() {
     CoroutinesComposeAppTheme {
-        ProfileScreen({}, {})
+//        ProfileScreen({}, {})
     }
 }
 
 @Composable
-fun ProfileScreen(onBackClicked: () -> Unit, onLogOutClicked: () -> Unit) {
+fun ProfileScreen(
+    viewModel: ProfileViewModel,
+    onBackClicked: () -> Unit,
+    onLogOutClicked: () -> Unit
+) {
+    when (val uiState = viewModel.uiState) {
+        ProfileState.Loading -> LoadingScreen()
+        is ProfileState.Success -> ProfileSuccessScreen(
+            viewModel = viewModel,
+            userUI = uiState.userUI,
+            onBackClicked = onBackClicked,
+        )
+        ProfileState.Logout -> onLogOutClicked()
+    }
+}
+
+@Composable
+fun ProfileSuccessScreen(viewModel: ProfileViewModel, userUI: UserUI, onBackClicked: () -> Unit) {
     val scaffoldState =
         rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
     CoroutinesComposeAppTheme {
@@ -47,8 +65,9 @@ fun ProfileScreen(onBackClicked: () -> Unit, onLogOutClicked: () -> Unit) {
                 ProfileTopAppBar(onBackClicked = onBackClicked)
             }) { paddingValues ->
             ProfileBody(
+                userUI = userUI,
                 modifier = Modifier.padding(paddingValues),
-                onLogOutClicked = onLogOutClicked
+                onLogOutClicked = viewModel::logout
             )
         }
     }
@@ -104,7 +123,7 @@ private fun ProfileAvatar(@DrawableRes avatarRes: Int, modifier: Modifier, onCli
 }
 
 @Composable
-private fun ProfileBody(modifier: Modifier, onLogOutClicked: () -> Unit) {
+private fun ProfileBody(userUI: UserUI, modifier: Modifier, onLogOutClicked: () -> Unit) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -115,7 +134,7 @@ private fun ProfileBody(modifier: Modifier, onLogOutClicked: () -> Unit) {
             modifier = Modifier.weight(0.22f)
         ) {}
         Text(
-            text = "SetJy",
+            text = "${userUI.firstName} ${userUI.secondName}",
             style = MaterialTheme.typography.h2,
             modifier = Modifier.weight(0.08f)
         )

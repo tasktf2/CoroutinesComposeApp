@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import com.example.coroutinescomposeapp.R
-import com.example.coroutinescomposeapp.ui.model.DetailsItemUI
+import com.example.coroutinescomposeapp.ui.model.DetailsUI
 import com.example.coroutinescomposeapp.ui.theme.*
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -53,7 +53,7 @@ fun DetailsScreen(
     when (uiState) {
         DetailsState.Loading -> LoadingScreen()
         is DetailsState.Success -> DetailsSuccessScreen(
-            detailsItemUI = uiState.details,
+            detailsUI = uiState.details,
             modifier = modifier,
             onBackClicked = onBackClicked,
             onAddToCartClicked = onAddToCartClicked
@@ -64,7 +64,7 @@ fun DetailsScreen(
 
 @Composable
 fun DetailsSuccessScreen(
-    detailsItemUI: DetailsItemUI,
+    detailsUI: DetailsUI,
     modifier: Modifier,
     onBackClicked: () -> Unit,
     onAddToCartClicked: () -> Unit
@@ -78,7 +78,7 @@ fun DetailsSuccessScreen(
     ) { paddingValues ->
         DetailsBody(
             modifier = Modifier.padding(paddingValues),
-            detailsItemUI = detailsItemUI,
+            detailsUI = detailsUI,
             quantity = quantity,
             onMinusClicked = { if (quantity != 1) quantity -= 1 },
             onPlusClicked = { quantity += 1 },
@@ -107,7 +107,7 @@ private fun DetailsTopAppBar(onBackClicked: () -> Unit) {
 @Composable
 private fun DetailsBody(
     modifier: Modifier,
-    detailsItemUI: DetailsItemUI,
+    detailsUI: DetailsUI,
     quantity: Int,
     onMinusClicked: () -> Unit,
     onPlusClicked: () -> Unit,
@@ -127,20 +127,20 @@ private fun DetailsBody(
         ) {
             DetailsPager(
                 state = pagerState,
-                images = detailsItemUI.itemImages
+                images = detailsUI.itemImages
             ) {}
             ItemPreviewRow(
-                detailsItemUI = detailsItemUI,
+                detailsUI = detailsUI,
                 state = pagerState
             )
-            ItemDescription(detailsItemUI = detailsItemUI)
+            ItemDescription(detailsUI = detailsUI)
             Spacer(modifier = Modifier.height(0.dp))
         }
         AddToCart(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxHeight(0.15f),
-            price = calculateTotalPrice(price = detailsItemUI.itemPrice, quantity = quantity),
+            price = calculateTotalPrice(price = detailsUI.itemPrice, quantity = quantity),
             onMinusClicked = onMinusClicked,
             onPlusClicked = onPlusClicked,
             onAddToCartClicked = onAddToCartClicked
@@ -227,7 +227,7 @@ private fun DetailsPager(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun ItemPreviewRow(
-    detailsItemUI: DetailsItemUI,
+    detailsUI: DetailsUI,
     state: PagerState
 ) {
     val lazyListState = rememberLazyListState()
@@ -238,15 +238,15 @@ private fun ItemPreviewRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        items(items = detailsItemUI.itemImages) { item ->
+        items(items = detailsUI.itemImages) { item ->
 
             val elevation = when (state.currentPage) {
-                detailsItemUI.itemImages.indexOf(item) -> 10.dp
+                detailsUI.itemImages.indexOf(item) -> 10.dp
                 else -> 0.dp
             }
             val itemModifier =
                 when (state.currentPage) {
-                    detailsItemUI.itemImages.indexOf(item) -> Modifier
+                    detailsUI.itemImages.indexOf(item) -> Modifier
                         .size(width = 83.dp, height = 45.dp)
                     else -> Modifier
                         .size(width = 66.dp, height = 38.dp)
@@ -273,7 +273,7 @@ private fun ItemPreviewRow(
 }
 
 @Composable
-private fun ItemDescription(detailsItemUI: DetailsItemUI) {
+private fun ItemDescription(detailsUI: DetailsUI) {
 
     Column(verticalArrangement = Arrangement.Top, modifier = Modifier.padding(horizontal = 24.dp)) {
         Row(
@@ -282,17 +282,17 @@ private fun ItemDescription(detailsItemUI: DetailsItemUI) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = detailsItemUI.itemName,
+                text = detailsUI.itemName,
                 style = MaterialTheme.typography.h1.copy(fontSize = 17.sp),
                 modifier = Modifier.fillMaxWidth(0.6f)
             )
             Text(
-                text = "$${detailsItemUI.itemPrice}",
+                text = "$${detailsUI.itemPrice}",
                 style = MaterialTheme.typography.h1.copy(fontSize = 17.sp)
             )
         }
         Text(
-            text = detailsItemUI.itemDescription, style = MaterialTheme.typography.h6,
+            text = detailsUI.itemDescription, style = MaterialTheme.typography.h6,
             color = DarkGray,
             modifier = Modifier.fillMaxWidth(0.7f)
         )
@@ -306,14 +306,14 @@ private fun ItemDescription(detailsItemUI: DetailsItemUI) {
                 tint = BrightOrange
             )
             Text(
-                text = detailsItemUI.itemRating.toString(),
+                text = detailsUI.itemRating.toString(),
                 style = MaterialTheme.typography.h1,
                 fontSize = 9.sp
             )
             Text(
                 text = buildString {
                     append(" (")
-                    append(detailsItemUI.itemCountOfReviews)
+                    append(detailsUI.itemCountOfReviews)
                     append(" ")
                     append(stringResource(R.string.reviews))
                     append(")")
@@ -328,14 +328,14 @@ private fun ItemDescription(detailsItemUI: DetailsItemUI) {
             fontSize = 10.sp,
             color = DarkGray
         )
-        RowOfColors(detailsItemUI)
+        RowOfColors(detailsUI)
     }
 }
 
 @Composable
-private fun RowOfColors(detailsItemUI: DetailsItemUI) {
+private fun RowOfColors(detailsUI: DetailsUI) {
 
-    var colorPick by remember { mutableStateOf(detailsItemUI.colors[0]) }
+    var colorPick by remember { mutableStateOf(detailsUI.colors[0]) }
 
     Row(
         modifier = Modifier
@@ -343,7 +343,7 @@ private fun RowOfColors(detailsItemUI: DetailsItemUI) {
             .padding(top = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        detailsItemUI.colors.forEach { itemColor ->
+        detailsUI.colors.forEach { itemColor ->
             val borderModifier = when (colorPick) {
                 itemColor -> Modifier.border(
                     width = 2.dp,

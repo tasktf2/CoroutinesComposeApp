@@ -24,15 +24,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.coroutinescomposeapp.R
 import com.example.coroutinescomposeapp.di.TempData
-import com.example.coroutinescomposeapp.ui.model.CardItemUI
-import com.example.coroutinescomposeapp.ui.model.CategoryUI
 import com.example.coroutinescomposeapp.ui.model.CardType
+import com.example.coroutinescomposeapp.ui.model.CardUI
+import com.example.coroutinescomposeapp.ui.model.CategoryUI
 import com.example.coroutinescomposeapp.ui.theme.*
 import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.launch
@@ -42,18 +41,24 @@ import kotlinx.coroutines.launch
 @Composable
 private fun MainPreview() {
     CoroutinesComposeAppTheme {
-        MainSuccessScreen({}, listOf(), listOf(), Modifier)
+//        MainSuccessScreen({}, listOf(), listOf(), Modifier)
     }
 }
 
 @Composable
-fun MainScreen(uiState: MainState, modifier: Modifier, onCardClicked: () -> Unit) {
+fun MainScreen(
+    uiState: MainState,
+    userPassword: String?,
+    modifier: Modifier,
+    onCardClicked: () -> Unit
+) {
     when (uiState) {
         is MainState.Loading -> LoadingScreen()
         is MainState.Success -> MainSuccessScreen(
             onCardClicked = onCardClicked,
             latestList = uiState.latestProducts,
             flashList = uiState.flashSaleProducts,
+            userPassword = userPassword,
             modifier = modifier
         )
         is MainState.Error -> ErrorScreen()
@@ -63,15 +68,27 @@ fun MainScreen(uiState: MainState, modifier: Modifier, onCardClicked: () -> Unit
 @Composable
 fun MainSuccessScreen(
     onCardClicked: () -> Unit,
-    latestList: List<CardItemUI>,
-    flashList: List<CardItemUI>,
+    latestList: List<CardUI>,
+    flashList: List<CardUI>,
+    userPassword: String?,
     modifier: Modifier
 ) {
     val scaffoldState =
         rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
     val coroutineScope = rememberCoroutineScope()
+    val snackBarHostState = remember { SnackbarHostState() }
 
     var valueSearch by remember { mutableStateOf("") }
+    var isPasswordShown by remember { mutableStateOf(false) }
+
+    if (!isPasswordShown) {
+        userPassword?.let {
+            LaunchedEffect(Unit) {
+                snackBarHostState.showSnackbar("Your password is $userPassword")
+                isPasswordShown = true
+            }
+        }
+    }
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -88,6 +105,9 @@ fun MainSuccessScreen(
                 username = "setJy",
                 avatarRes = R.drawable.ic_launcher_background,
                 onAvatarClicked = {})
+        },
+        snackbarHost = {
+            SnackBarShowPassword(snackBarHostState)
         }) { paddingValues ->
         MainBody(
             modifier = Modifier.padding(paddingValues),
@@ -98,6 +118,25 @@ fun MainSuccessScreen(
             flash = flashList
         )
     }
+}
+
+@Composable
+private fun SnackBarShowPassword(snackBarHostState: SnackbarHostState) {
+    SnackbarHost(
+        hostState = snackBarHostState,
+        snackbar = { data ->
+            Snackbar(
+                modifier = Modifier.padding(16.dp),
+                action = {
+                    TextButton(onClick = { snackBarHostState.currentSnackbarData?.dismiss() }) {
+                        Text(stringResource(R.string.dismiss))
+                    }
+                }
+            ) {
+                Text(data.message)
+            }
+        }
+    )
 }
 
 @Composable
@@ -194,8 +233,8 @@ private fun MainBody(
     valueSearch: String,
     onValueChanged: (String) -> Unit,
     onCardClicked: () -> Unit,
-    latest: List<CardItemUI>,
-    flash: List<CardItemUI>
+    latest: List<CardUI>,
+    flash: List<CardUI>
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -278,7 +317,7 @@ private fun CardGroup(
     cardType: CardType,
     onViewAllClick: () -> Unit,
     onCardClicked: () -> Unit,
-    cardItems: List<CardItemUI>
+    cardItems: List<CardUI>
 ) {
     Column {
         Row(
@@ -306,7 +345,7 @@ private fun CardGroup(
 }
 
 @Composable
-private fun CardItem(cardType: CardType, cardItem: CardItemUI, onCardClicked: () -> Unit) {
+private fun CardItem(cardType: CardType, cardItem: CardUI, onCardClicked: () -> Unit) {
 
     val textModifier = Modifier
         .widthIn(max = cardType.width / 1.5f)
@@ -377,7 +416,7 @@ private fun CardShadow(cardType: CardType, modifier: Modifier) {
 private fun CardCategory(
     modifier: Modifier,
     cardType: CardType,
-    cardItem: CardItemUI
+    cardItem: CardUI
 ) {
     Box(
         modifier = modifier
@@ -402,7 +441,7 @@ private fun CardCategory(
 
 @Composable
 private fun CardName(
-    cardItem: CardItemUI,
+    cardItem: CardUI,
     cardType: CardType,
     modifier: Modifier
 ) {
@@ -417,7 +456,7 @@ private fun CardName(
 
 @Composable
 private fun CardPrice(
-    cardItem: CardItemUI,
+    cardItem: CardUI,
     cardType: CardType,
     modifier: Modifier
 ) {
@@ -453,7 +492,7 @@ private fun CardButtons(cardType: CardType, modifier: Modifier) {
 @Composable
 private fun CardDiscount(
     cardType: CardType,
-    cardItem: CardItemUI,
+    cardItem: CardUI,
     modifier: Modifier
 ) {
     if (cardType == CardType.FLASH_SALE) {

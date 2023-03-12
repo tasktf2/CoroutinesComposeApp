@@ -24,10 +24,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.coroutinescomposeapp.ui.screen.*
 import com.example.coroutinescomposeapp.ui.theme.DarkGray
 import com.example.coroutinescomposeapp.ui.theme.DarkGrayishBlue
@@ -74,10 +76,12 @@ fun ComposeApp(
             modifier = modifier.padding(innerPaddings)
         ) {
             composable(route = ComposeScreen.SignUp.name) {
+                val signUpViewModel: SignUpViewModel = viewModel(factory = SignUpViewModel.factory)
                 SignUpScreen(
-                    onSignUpClicked = {
+                    viewModel = signUpViewModel,
+                    onSignUpClicked = { userPassword ->
                         navController.backQueue.clear()
-                        navController.navigate(BottomMenu.Main.name)
+                        navController.navigate(route = "${BottomMenu.Main.name}?userPassword=$userPassword")
                     },
                     onLoginClicked = {
                         navController.navigate(ComposeScreen.Login.name)
@@ -85,21 +89,31 @@ fun ComposeApp(
                 )
             }
             composable(route = ComposeScreen.Login.name) {
-                LoginScreen {
+                val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModel.factory)
+                LoginScreen(viewModel = loginViewModel) {
                     navController.backQueue.clear()
                     navController.navigate(BottomMenu.Main.name)
                 }
             }
-            composable(route = BottomMenu.Main.name) {
-                val mainViewModel: MainViewModel = viewModel()
+            composable(route = "${BottomMenu.Main.name}?userPassword={userPassword}",
+                arguments = listOf(
+                    navArgument("userPassword") {
+                        type = NavType.StringType
+                        nullable = true
+                    }
+                )) { backStackEntry ->
+                val userPassword = backStackEntry.arguments?.getString("userPassword")
+                val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.factory)
                 MainScreen(
                     uiState = mainViewModel.uiState,
+                    userPassword = userPassword,
                     modifier = modifier,
                     onCardClicked = { navController.navigate(ComposeScreen.Details.name) }
                 )
             }
             composable(route = ComposeScreen.Details.name) {
-                val detailsViewModel: DetailsViewModel = viewModel()
+                val detailsViewModel: DetailsViewModel =
+                    viewModel(factory = DetailsViewModel.factory)
                 DetailsScreen(
                     uiState = detailsViewModel.uiState,
                     modifier = modifier,
@@ -108,7 +122,11 @@ fun ComposeApp(
                 )
             }
             composable(route = BottomMenu.Profile.name) {
-                ProfileScreen(onBackClicked = navController::popBackStack,
+                val profileViewModel: ProfileViewModel =
+                    viewModel(factory = ProfileViewModel.factory)
+                ProfileScreen(
+                    viewModel = profileViewModel,
+                    onBackClicked = navController::popBackStack,
                     onLogOutClicked = {
                         navController.backQueue.clear()
                         navController.navigate(ComposeScreen.SignUp.name)
