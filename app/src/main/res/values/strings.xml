@@ -42,4 +42,12 @@
     <string name="upload_item">Upload item</string>
     <string name="image_request_failure">Image request failed.</string>
     <string name="discount">% off</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="error_empty_fields">Fill all fields</string>
+    <string name="error_email_type">Wrong e-mail type, example: jack-hofman10@gmail.com</string>
+    <string name="error_password">Wrong password</string>
+    <string name="error_email_not_registered">This e-mail is not registered</string>
+    <string name="error_email_registered">This e-mail is already registered</string>
+    <string name="error_email">Empty e-mail</string>
+    <string name="signup_with">\"Sign up with \"</string>
 </resources>

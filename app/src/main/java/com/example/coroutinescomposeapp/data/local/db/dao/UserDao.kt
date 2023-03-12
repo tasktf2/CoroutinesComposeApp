@@ -7,11 +7,14 @@ import com.example.coroutinescomposeapp.data.local.model.UserEntity
 interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertNewUser(user: UserEntity)
+    suspend fun insertNewUser(user: UserEntity)
 
     @Query("SELECT * FROM user WHERE email = :userMail")
-    fun getUserByEmail(userMail: String): UserEntity
+    suspend fun getUserByEmail(userMail: String): UserEntity
+
+    @Query("SELECT EXISTS (SELECT 1 FROM user WHERE email = :userMail)")
+    suspend fun checkIfUserExistsByEmail(userMail: String): Boolean
 
     @Query("DELETE FROM user WHERE email =:userMail")
-    fun deleteUserByEmail(userMail: String)
+    suspend fun deleteUserByEmail(userMail: String)
 }

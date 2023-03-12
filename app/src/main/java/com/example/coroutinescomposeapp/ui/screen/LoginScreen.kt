@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.coroutinescomposeapp.R
+import com.example.coroutinescomposeapp.ui.theme.BrightRed
 import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
 import com.example.coroutinescomposeapp.ui.theme.VeryLightGray
 
@@ -25,20 +26,25 @@ import com.example.coroutinescomposeapp.ui.theme.VeryLightGray
 @Composable
 private fun LoginPreview() {
     CoroutinesComposeAppTheme {
-        LoginScreen {}
+//        LoginScreen {}
     }
 }
 
 @Composable
-fun LoginScreen(onLoginClicked: () -> Unit) {
-    var valueEmail by remember {
-        mutableStateOf("")
-    }
-    var valuePassword by remember {
-        mutableStateOf("")
-    }
+fun LoginScreen(viewModel: LoginViewModel, onLoginClicked: () -> Unit) {
+
+    val uiState = viewModel.uiState
+
     var passwordVisibility by remember {
         mutableStateOf(false)
+    }
+
+    DisposableEffect(uiState) {
+        when (uiState) {
+            is LoginState.Success -> onLoginClicked()
+            else -> {}
+        }
+        onDispose {}
     }
 
     Column(
@@ -57,8 +63,8 @@ fun LoginScreen(onLoginClicked: () -> Unit) {
         ) {
             CustomTextField(
                 placeholder = stringResource(R.string.e_mail),
-                value = valueEmail,
-                onValueChange = { valueEmail = it },
+                value = uiState.userUI.email,
+                onValueChange = viewModel::emailChanged,
                 modifier = Modifier
                     .fillMaxWidth(fraction = 0.8f)
                     .height(29.dp)
@@ -66,8 +72,8 @@ fun LoginScreen(onLoginClicked: () -> Unit) {
             )
             CustomTextField(
                 placeholder = stringResource(R.string.password),
-                value = valuePassword,
-                onValueChange = { valuePassword = it },
+                value = uiState.userUI.password,
+                onValueChange = viewModel::passwordChanged,
                 modifier = Modifier
                     .fillMaxWidth(fraction = 0.8f)
                     .height(29.dp)
@@ -92,7 +98,38 @@ fun LoginScreen(onLoginClicked: () -> Unit) {
                     PasswordVisualTransformation()
                 }
             )
-            ButtonWithText(text = stringResource(R.string.login), onClick = onLoginClicked)
+            if (uiState is LoginState.EmptyEmailOrPassword) {
+                Text(
+                    text = stringResource(R.string.error_empty_fields),
+                    style = MaterialTheme.typography.h5,
+                    color = BrightRed,
+                )
+            }
+            if (uiState is LoginState.WrongEmailError) {
+                Text(
+                    text = stringResource(R.string.error_email_type),
+                    style = MaterialTheme.typography.h5,
+                    color = BrightRed,
+                )
+            }
+            if (uiState is LoginState.WrongPasswordError) {
+                Text(
+                    text = stringResource(R.string.error_password),
+                    style = MaterialTheme.typography.h5,
+                    color = BrightRed,
+                )
+            }
+            if (uiState is LoginState.UserNotExists) {
+                Text(
+                    text = stringResource(R.string.error_email_not_registered),
+                    style = MaterialTheme.typography.h5,
+                    color = BrightRed,
+                )
+            }
+            ButtonWithText(
+                text = stringResource(R.string.login),
+                onClick = viewModel::loginButtonClicked
+            )
         }
     }
 }

@@ -1,38 +1,47 @@
 package com.example.coroutinescomposeapp.di
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.rounded.*
+import com.example.coroutinescomposeapp.ComposeApplication
+import com.example.coroutinescomposeapp.data.local.db.AppDatabase
+import com.example.coroutinescomposeapp.data.local.model.UserEntityMapper
 import com.example.coroutinescomposeapp.data.remote.response.DetailsEntityMapper
 import com.example.coroutinescomposeapp.data.remote.response.ProductEntityMapper
 import com.example.coroutinescomposeapp.data.repo.DetailsRepoImpl
 import com.example.coroutinescomposeapp.data.repo.ProductRepoImpl
+import com.example.coroutinescomposeapp.data.repo.UserRepoImpl
+import com.example.coroutinescomposeapp.domain.base.DomainMapper
 import com.example.coroutinescomposeapp.domain.base.UseCase
 import com.example.coroutinescomposeapp.domain.model.DetailsDomainMapper
 import com.example.coroutinescomposeapp.domain.model.ProductDomainMapper
+import com.example.coroutinescomposeapp.domain.model.User
+import com.example.coroutinescomposeapp.domain.model.UserDomainMapper
 import com.example.coroutinescomposeapp.domain.repo.ProductRepo
-import com.example.coroutinescomposeapp.domain.usecase.GetDetailsUseCase
-import com.example.coroutinescomposeapp.domain.usecase.GetFlashSaleProductsUseCase
-import com.example.coroutinescomposeapp.domain.usecase.GetLatestProductsUseCase
+import com.example.coroutinescomposeapp.domain.repo.UserRepo
+import com.example.coroutinescomposeapp.domain.usecase.*
 import com.example.coroutinescomposeapp.ui.model.CardUI
 import com.example.coroutinescomposeapp.ui.model.CategoryUI
 import com.example.coroutinescomposeapp.ui.model.DetailsUI
+import com.example.coroutinescomposeapp.ui.model.UserUI
 
 object TempData {
+
+    private const val KEY_SHARED_PREFS = "APP_SHARED_PREFS"
 
     private val productEntityMapper by lazy { ProductEntityMapper() }
     private val detailsEntityMapper by lazy { DetailsEntityMapper() }
 
     private val productRepo: ProductRepo by lazy {
         ProductRepoImpl(
-            NetworkService.productApi,
-            productEntityMapper
+            NetworkService.productApi, productEntityMapper
         )
     }
     private val detailsRepo by lazy {
         DetailsRepoImpl(
-            NetworkService.detailsApi,
-            detailsEntityMapper
+            NetworkService.detailsApi, detailsEntityMapper
         )
     }
 
@@ -41,30 +50,61 @@ object TempData {
 
     val getLatestProductsUseCase: UseCase<Unit, List<CardUI>> by lazy {
         GetLatestProductsUseCase(
-            productRepo = productRepo,
-            productDomainMapper = productDomainMapper
+            productRepo = productRepo, productDomainMapper = productDomainMapper
         )
     }
     val getFlashSaleProductsUseCase: UseCase<Unit, List<CardUI>> by lazy {
         GetFlashSaleProductsUseCase(
-            productRepo = productRepo,
-            productDomainMapper = productDomainMapper
+            productRepo = productRepo, productDomainMapper = productDomainMapper
         )
     }
     val GetDetailsUseCase: UseCase<Unit, DetailsUI> by lazy {
         GetDetailsUseCase(
-            detailsDomainMapper,
-            detailsRepo
+            detailsDomainMapper, detailsRepo
+        )
+    }
+    private val database by lazy { AppDatabase.getDatabase(ComposeApplication.appContext!!) }
+    private val userDao by lazy { database.userDao() }
+    private val userRepo: UserRepo by lazy {
+        UserRepoImpl(userDao, UserEntityMapper(), sharedPreferences)
+    }
+    private val userDomainMapper: DomainMapper<User, UserUI> by lazy { UserDomainMapper() }
+    val getUserByEmailUseCase: UseCase<GetUserByEmailUseCase.Params, UserUI> by lazy {
+        GetUserByEmailUseCase(
+            userRepo, UserDomainMapper()
+        )
+    }
+    val insertUserUseCase: UseCase<InsertUserUseCase.Params, Unit> by lazy {
+        InsertUserUseCase(
+            userRepo, userDomainMapper
         )
     }
 
-    val listOfIcons: List<CategoryUI> =
-        listOf(
-            CategoryUI(imageVector = Icons.Outlined.PhoneAndroid, description = "Phones"),
-            CategoryUI(imageVector = Icons.Rounded.Headphones, description = "Headphones"),
-            CategoryUI(imageVector = Icons.Rounded.SportsEsports, description = "Games"),
-            CategoryUI(imageVector = Icons.Rounded.DirectionsCar, description = "Cars"),
-            CategoryUI(imageVector = Icons.Rounded.NightShelter, description = "Furniture"),
-            CategoryUI(imageVector = Icons.Rounded.SmartToy, description = "Kids"),
+    val deleteUserByEmailUseCase: UseCase<DeleteUserByEmailUseCase.Params, Unit> by lazy {
+        DeleteUserByEmailUseCase(
+            userRepo
         )
+    }
+
+    val checkIfUserExistsByEmailUseCase: UseCase<CheckIfUserExistsByEmailUseCase.Params, Boolean> by lazy {
+        CheckIfUserExistsByEmailUseCase(
+            userRepo
+        )
+    }
+
+    private val sharedPreferences: SharedPreferences by lazy {
+        ComposeApplication.appContext!!.getSharedPreferences(KEY_SHARED_PREFS, Context.MODE_PRIVATE)
+    }
+
+    val getOwnUserEmailUseCase: UseCase<Unit, String> by lazy { GetOwnUserEmailUseCase(userRepo) }
+    val insertOwnUserEmailUseCase: UseCase<InsertOwnUserEmailUseCase.Params, Unit> = InsertOwnUserEmailUseCase(userRepo)
+
+    val listOfIcons: List<CategoryUI> = listOf(
+        CategoryUI(imageVector = Icons.Outlined.PhoneAndroid, description = "Phones"),
+        CategoryUI(imageVector = Icons.Rounded.Headphones, description = "Headphones"),
+        CategoryUI(imageVector = Icons.Rounded.SportsEsports, description = "Games"),
+        CategoryUI(imageVector = Icons.Rounded.DirectionsCar, description = "Cars"),
+        CategoryUI(imageVector = Icons.Rounded.NightShelter, description = "Furniture"),
+        CategoryUI(imageVector = Icons.Rounded.SmartToy, description = "Kids"),
+    )
 }

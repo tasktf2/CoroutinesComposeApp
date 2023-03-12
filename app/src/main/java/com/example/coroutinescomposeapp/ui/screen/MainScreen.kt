@@ -41,18 +41,24 @@ import kotlinx.coroutines.launch
 @Composable
 private fun MainPreview() {
     CoroutinesComposeAppTheme {
-        MainSuccessScreen({}, listOf(), listOf(), Modifier)
+//        MainSuccessScreen({}, listOf(), listOf(), Modifier)
     }
 }
 
 @Composable
-fun MainScreen(uiState: MainState, modifier: Modifier, onCardClicked: () -> Unit) {
+fun MainScreen(
+    uiState: MainState,
+    userPassword: String?,
+    modifier: Modifier,
+    onCardClicked: () -> Unit
+) {
     when (uiState) {
         is MainState.Loading -> LoadingScreen()
         is MainState.Success -> MainSuccessScreen(
             onCardClicked = onCardClicked,
             latestList = uiState.latestProducts,
             flashList = uiState.flashSaleProducts,
+            userPassword = userPassword,
             modifier = modifier
         )
         is MainState.Error -> ErrorScreen()
@@ -64,13 +70,25 @@ fun MainSuccessScreen(
     onCardClicked: () -> Unit,
     latestList: List<CardUI>,
     flashList: List<CardUI>,
+    userPassword: String?,
     modifier: Modifier
 ) {
     val scaffoldState =
         rememberScaffoldState(drawerState = rememberDrawerState(initialValue = DrawerValue.Closed))
     val coroutineScope = rememberCoroutineScope()
+    val snackBarHostState = remember { SnackbarHostState() }
 
     var valueSearch by remember { mutableStateOf("") }
+    var isPasswordShown by remember { mutableStateOf(false) }
+
+    if (!isPasswordShown) {
+        userPassword?.let {
+            LaunchedEffect(Unit) {
+                snackBarHostState.showSnackbar("Your password is $userPassword")
+                isPasswordShown = true
+            }
+        }
+    }
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -87,6 +105,9 @@ fun MainSuccessScreen(
                 username = "setJy",
                 avatarRes = R.drawable.ic_launcher_background,
                 onAvatarClicked = {})
+        },
+        snackbarHost = {
+            SnackBarShowPassword(snackBarHostState)
         }) { paddingValues ->
         MainBody(
             modifier = Modifier.padding(paddingValues),
@@ -97,6 +118,25 @@ fun MainSuccessScreen(
             flash = flashList
         )
     }
+}
+
+@Composable
+private fun SnackBarShowPassword(snackBarHostState: SnackbarHostState) {
+    SnackbarHost(
+        hostState = snackBarHostState,
+        snackbar = { data ->
+            Snackbar(
+                modifier = Modifier.padding(16.dp),
+                action = {
+                    TextButton(onClick = { snackBarHostState.currentSnackbarData?.dismiss() }) {
+                        Text(stringResource(R.string.dismiss))
+                    }
+                }
+            ) {
+                Text(data.message)
+            }
+        }
+    )
 }
 
 @Composable

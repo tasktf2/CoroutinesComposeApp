@@ -22,24 +22,36 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.coroutinescomposeapp.R
+import com.example.coroutinescomposeapp.ui.theme.BrightRed
 import com.example.coroutinescomposeapp.ui.theme.CoroutinesComposeAppTheme
 import com.example.coroutinescomposeapp.ui.theme.VeryLightGray
+import kotlin.random.Random
 
 @Preview(showBackground = true)
 @Composable
 private fun SignUpPreview() {
     CoroutinesComposeAppTheme {
-        SignUpScreen({}, {})
+//        SignUpScreen({}, {})
     }
 }
 
 @Composable
-fun SignUpScreen(onSignUpClicked: () -> Unit, onLoginClicked: () -> Unit) {
+fun SignUpScreen(
+    viewModel: SignUpViewModel,
+    onSignUpClicked: (String) -> Unit,
+    onLoginClicked: () -> Unit
+) {
+    val uiState = viewModel.uiState
+    val password by remember { mutableStateOf(generatePassword()) }
 
-    var valueFirstName by remember { mutableStateOf("") }
-    var valueSecondName by remember { mutableStateOf("") }
-    var valueEmail by remember { mutableStateOf("") }
-
+    DisposableEffect(uiState) {
+        when (uiState) {
+            is SignUpState.Success -> onSignUpClicked(password)
+            SignUpState.ToLogin -> onLoginClicked()
+            else -> {}
+        }
+        onDispose {}
+    }
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -55,32 +67,54 @@ fun SignUpScreen(onSignUpClicked: () -> Unit, onLoginClicked: () -> Unit) {
         ) {
             CustomTextField(
                 placeholder = stringResource(R.string.first_name),
-                value = valueFirstName,
-                onValueChange = { valueFirstName = it },
+                value = uiState.userUI.firstName,
+                onValueChange = viewModel::firstNameChanged,
                 modifier = Modifier
                     .height(29.dp)
                     .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
             )
             CustomTextField(
                 placeholder = stringResource(R.string.second_name),
-                value = valueSecondName,
-                onValueChange = { valueSecondName = it },
+                value = uiState.userUI.secondName,
+                onValueChange = viewModel::secondNameChanged,
                 modifier = Modifier
                     .height(29.dp)
                     .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
             )
             CustomTextField(
                 placeholder = stringResource(id = R.string.e_mail),
-                value = valueEmail,
-                onValueChange = { valueEmail = it },
+                value = uiState.userUI.email,
+                onValueChange = viewModel::emailChanged,
                 modifier = Modifier
                     .height(29.dp)
                     .background(color = VeryLightGray, shape = MaterialTheme.shapes.large),
             )
-            ButtonWithText(text = stringResource(id = R.string.sign_up), onClick = onSignUpClicked)
+            if (uiState is SignUpState.Error) {
+                Text(
+                    text = stringResource(id = R.string.error_email_type),
+                    style = MaterialTheme.typography.h5,
+                    color = BrightRed,
+                )
+            }
+            if (uiState is SignUpState.EmptyEmail) {
+                Text(
+                    text = stringResource(R.string.error_email), style = MaterialTheme.typography.h5,
+                    color = BrightRed,
+                )
+            }
+            if (uiState is SignUpState.UserExists) {
+                Text(
+                    text = stringResource(R.string.error_email_registered), style = MaterialTheme.typography.h5,
+                    color = BrightRed,
+                )
+            }
+
+            ButtonWithText(
+                text = stringResource(id = R.string.sign_up)
+            ) { viewModel.signUpButtonClicked(password) }
         }
 
-        SignInText(modifier = Modifier.weight(0.05f), onClick = onLoginClicked)
+        SignInText(modifier = Modifier.weight(0.05f), onClick = viewModel::loginButtonClicked)
 
         Column(
             modifier = Modifier.weight(0.25f), verticalArrangement = Arrangement.Top
@@ -94,6 +128,8 @@ fun SignUpScreen(onSignUpClicked: () -> Unit, onLoginClicked: () -> Unit) {
         }
     }
 }
+
+private fun generatePassword() = Random.nextInt(1000, 9999).toString()
 
 @Composable
 internal fun CustomTextField(
@@ -206,7 +242,10 @@ private fun SignUpWithAnotherResource(
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
-            text = "Sign up with $resource",
+            text = buildString {
+        append(stringResource(R.string.signup_with))
+        append(resource)
+    },
             style = MaterialTheme.typography.h4
         )
     }
