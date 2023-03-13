@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -31,6 +31,16 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.coroutinescomposeapp.ui.screen.*
+import com.example.coroutinescomposeapp.ui.screen.details.DetailsScreen
+import com.example.coroutinescomposeapp.ui.screen.details.DetailsViewModel
+import com.example.coroutinescomposeapp.ui.screen.login.LoginScreen
+import com.example.coroutinescomposeapp.ui.screen.login.LoginViewModel
+import com.example.coroutinescomposeapp.ui.screen.main.MainScreen
+import com.example.coroutinescomposeapp.ui.screen.main.MainViewModel
+import com.example.coroutinescomposeapp.ui.screen.profile.ProfileScreen
+import com.example.coroutinescomposeapp.ui.screen.profile.ProfileViewModel
+import com.example.coroutinescomposeapp.ui.screen.signup.SignUpScreen
+import com.example.coroutinescomposeapp.ui.screen.signup.SignUpViewModel
 import com.example.coroutinescomposeapp.ui.theme.DarkGray
 import com.example.coroutinescomposeapp.ui.theme.DarkGrayishBlue
 import com.example.coroutinescomposeapp.ui.theme.LightGrayishBlue
@@ -76,7 +86,7 @@ fun ComposeApp(
             modifier = modifier.padding(innerPaddings)
         ) {
             composable(route = ComposeScreen.SignUp.name) {
-                val signUpViewModel: SignUpViewModel = viewModel(factory = SignUpViewModel.factory)
+                val signUpViewModel: SignUpViewModel = hiltViewModel()
                 SignUpScreen(
                     viewModel = signUpViewModel,
                     onSignUpClicked = { userPassword ->
@@ -89,7 +99,7 @@ fun ComposeApp(
                 )
             }
             composable(route = ComposeScreen.Login.name) {
-                val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModel.factory)
+                val loginViewModel: LoginViewModel = hiltViewModel()
                 LoginScreen(viewModel = loginViewModel) {
                     navController.backQueue.clear()
                     navController.navigate(BottomMenu.Main.name)
@@ -103,7 +113,7 @@ fun ComposeApp(
                     }
                 )) { backStackEntry ->
                 val userPassword = backStackEntry.arguments?.getString("userPassword")
-                val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.factory)
+                val mainViewModel: MainViewModel = hiltViewModel()
                 MainScreen(
                     uiState = mainViewModel.uiState,
                     userPassword = userPassword,
@@ -112,8 +122,7 @@ fun ComposeApp(
                 )
             }
             composable(route = ComposeScreen.Details.name) {
-                val detailsViewModel: DetailsViewModel =
-                    viewModel(factory = DetailsViewModel.factory)
+                val detailsViewModel: DetailsViewModel = hiltViewModel()
                 DetailsScreen(
                     uiState = detailsViewModel.uiState,
                     modifier = modifier,
@@ -122,8 +131,7 @@ fun ComposeApp(
                 )
             }
             composable(route = BottomMenu.Profile.name) {
-                val profileViewModel: ProfileViewModel =
-                    viewModel(factory = ProfileViewModel.factory)
+                val profileViewModel: ProfileViewModel = hiltViewModel()
                 ProfileScreen(
                     viewModel = profileViewModel,
                     onBackClicked = navController::popBackStack,
