@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp' version "$ksp_version"
+    id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
 }
 
 android {
@@ -47,6 +49,9 @@ android {
 }
 
 dependencies {
+    implementation project(":domain")
+    implementation project(":data")
+
     def compose_ui_version = "1.3.3"
     def compose_material_version = "1.3.1"
 
@@ -64,23 +69,17 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_ui_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_ui_version"
 
-    //retrofit
+//    retrofit
     def retrofit = "2.9.0"
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
-    implementation "com.squareup.retrofit2:adapter-rxjava3:$retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit"
-
-    //okhttp
-    def okhttp = "4.10.0"
-    implementation "com.squareup.okhttp3:okhttp:$okhttp"
-    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp"
 
     //glide
     implementation "com.github.skydoves:landscapist-glide:2.1.7"
 
-    //room
-    def room_version = "2.5.0"
-    implementation "androidx.room:room-runtime:$room_version"
-    ksp "androidx.room:room-compiler:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
+    //hilt
+    def hilt_version = "2.44"
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
+    implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 }
